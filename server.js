@@ -644,12 +644,35 @@ app.post(['/webhook/c2b/confirm', '/payment/confirmation', '/mpesa/callback'], i
 
 /**
  * GET /api/transactions — dashboard polling (X-Api-Key protected)
+ * Supabase caps responses at 1000 rows by default. We paginate in batches
+ * of 1000 until we get an empty page so ALL transactions are always returned.
  */
 app.get('/api/transactions', async (req, res) => {
-  const { data: txns, error } = await supabase.from('transactions').select('*').order('id', { ascending: false });
-  if (error) { console.error('Supabase read error:', error.message); return res.status(500).json({ error: 'Database error' }); }
-  res.json({ transactions: txns || [], count: (txns || []).length });
+  const PAGE = 1000;
+  let allTxns = [];
+  let from = 0;
+
+  while (true) {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .order('id', { ascending: false })
+      .range(from, from + PAGE - 1);
+
+    if (error) {
+      console.error('Supabase read error:', error.message);
+      return res.status(500).json({ error: 'Database error' });
+    }
+
+    if (!data || data.length === 0) break;
+    allTxns = allTxns.concat(data);
+    if (data.length < PAGE) break; // last page
+    from += PAGE;
+  }
+
+  res.json({ transactions: allTxns, count: allTxns.length });
 });
+
 
 /**
  * DELETE /api/transactions/:id — dashboard delete (X-Api-Key protected)
