@@ -1510,7 +1510,7 @@ async function loadSmsStatus() {
   if (!el) return;
 
   const { serverUrl, apiKey } = webhookCfg;
-  if (!serverUrl || !apiKey) {
+  if (!serverUrl) {
     el.className = 'badge badge-muted';
     el.textContent = 'Server Unconfigured';
     return;
@@ -1550,7 +1550,7 @@ async function updateSmsEstimate() {
   el.textContent = '…';
 
   const { serverUrl, apiKey } = webhookCfg;
-  if (!serverUrl || !apiKey) {
+  if (!serverUrl) {
     // Estimate locally from cached transactions
     const today = toLocalDateStr(new Date());
     const seen = new Set();
@@ -1586,8 +1586,8 @@ async function sendBulkSMS() {
   if (!msg) { showToast('Please type a message first'); return; }
 
   const { serverUrl, apiKey } = webhookCfg;
-  if (!serverUrl || !apiKey) {
-    showToast('Server URL & API key not configured (see Daraja API settings)');
+  if (!serverUrl) {
+    showToast('Server URL not configured (see Daraja API settings)');
     return;
   }
 
@@ -1628,8 +1628,8 @@ async function sendBulkSMS() {
 async function loadCampaigns() {
   const el = document.getElementById('campaigns-list');
   const { serverUrl, apiKey } = webhookCfg;
-  if (!serverUrl || !apiKey) {
-    el.innerHTML = '<div class="empty-log">Configure server URL & API key in Daraja API settings to load campaign history.</div>';
+  if (!serverUrl) {
+    el.innerHTML = '<div class="empty-log">Configure server URL in Daraja API settings to load campaign history.</div>';
     return;
   }
   try {
@@ -1658,7 +1658,7 @@ async function loadCampaigns() {
 async function loadSmsLogs() {
   const el = document.getElementById('sms-logs-list');
   const { serverUrl, apiKey } = webhookCfg;
-  if (!serverUrl || !apiKey) { el.innerHTML = '<div class="empty-log">Configure server to load SMS logs.</div>'; return; }
+  if (!serverUrl) { el.innerHTML = '<div class="empty-log">Configure server to load SMS logs.</div>'; return; }
   try {
     const res  = await fetch(`${serverUrl.replace(/\/$/, '')}/api/sms/logs`, { headers: { 'X-Api-Key': apiKey } });
     const data = await res.json();
