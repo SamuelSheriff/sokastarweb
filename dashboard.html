@@ -261,7 +261,7 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
         <button class="nav-item" onclick="showPage('sms',this)">
           <span class="nav-icon">✉</span><span>SMS Manager</span>
         </button>
-        <button class="nav-item" onclick="showPage('webhook',this)">
+        <button class="nav-item" id="nav-webhook" onclick="showPage('webhook',this)" style="display:none;">
           <span class="nav-icon">⚡</span><span>Daraja API</span>
         </button>
       </nav>
@@ -890,6 +890,25 @@ function initAdmin() {
           fields.style.display = isHidden ? 'block' : 'none';
           whIconClicks = 0;
           showToast(isHidden ? 'Settings Unlocked' : 'Settings Locked');
+        }
+      }
+    });
+  }
+
+  // Secretly unlock Daraja API menu by clicking "Admin Panel" tag 5 times
+  let adminTagClicks = 0;
+  const adminTag = document.querySelector('.sidebar-admin-tag');
+  if (adminTag) {
+    adminTag.style.cursor = 'pointer';
+    adminTag.addEventListener('click', () => {
+      adminTagClicks++;
+      if (adminTagClicks >= 5) {
+        const navWebhook = document.getElementById('nav-webhook');
+        if (navWebhook) {
+          const isHidden = navWebhook.style.display === 'none';
+          navWebhook.style.display = isHidden ? 'flex' : 'none';
+          adminTagClicks = 0;
+          showToast(isHidden ? 'Daraja Settings Unlocked' : 'Daraja Settings Hidden');
         }
       }
     });
