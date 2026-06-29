@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sokastar Admin Panel</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root {
+  --green: #00c853; --green-dark: #007c2e; --green-dim: rgba(0,200,83,0.12);
+  --gold: #ffd600; --dark: #0a0f0a; --dark2: #111811; --dark3: #1a231a;
+  --card: #152015; --card2: #1c2a1c; --border: rgba(0,200,83,0.18);
+  --border2: rgba(0,200,83,0.08); --text: #e8f5e9; --muted: #7a9e7a;
+  --red: #ff4444; --blue: #2196f3; --white: #ffffff; --sidebar-w: 240px;
+  --orange: #ff9800;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html,body{height:100%;font-family:'Barlow',sans-serif;background:var(--dark);color:var(--text);overflow-x:hidden;}
+
+/* LOGIN */
+#login-screen{min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(0,200,83,0.08) 0%,transparent 70%);}
+.login-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:44px 40px 40px;width:100%;max-width:400px;}
+.login-logo{display:flex;align-items:center;gap:10px;margin-bottom:32px;}
+.logo-star{width:34px;height:34px;flex-shrink:0;background:linear-gradient(135deg,var(--green),var(--green-dark));
+  clip-path:polygon(50% 0%,61% 35%,98% 35%,68% 57%,79% 91%,50% 70%,21% 91%,32% 57%,2% 35%,39% 35%);}
+.login-logo-text{font-family:'Bebas Neue',sans-serif;font-size:1.7rem;letter-spacing:2px;color:var(--white);line-height:1;}
+.login-logo-text span{color:var(--green);}
+.login-tagline{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:28px;}
+.login-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px;display:block;}
+.login-input{width:100%;padding:11px 14px;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);
+  font-family:'Barlow',sans-serif;font-size:0.95rem;margin-bottom:18px;outline:none;transition:border-color .2s;}
+.login-input:focus{border-color:var(--green);}
+.login-btn{width:100%;padding:13px;background:var(--green);color:var(--dark);border:none;border-radius:6px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:2px;text-transform:uppercase;transition:background .2s;}
+.login-btn:hover{background:#00e564;}
+.login-error{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);border-radius:6px;padding:10px 14px;
+  color:var(--red);font-size:0.88rem;margin-bottom:16px;display:none;}
+
+/* ADMIN SHELL */
+#admin-screen{height:100vh;}
+.admin-layout{display:flex;height:100%;}
+
+/* SIDEBAR */
+.sidebar{width:var(--sidebar-w);flex-shrink:0;background:var(--dark2);border-right:1px solid var(--border);display:flex;flex-direction:column;z-index:10;}
+.sidebar-logo{display:flex;align-items:center;gap:10px;padding:22px 20px 20px;border-bottom:1px solid var(--border2);}
+.sidebar-logo .logo-star{width:28px;height:28px;}
+.sidebar-logo-text{font-family:'Bebas Neue',sans-serif;font-size:1.5rem;letter-spacing:2px;color:var(--white);line-height:1;}
+.sidebar-logo-text span{color:var(--green);}
+.sidebar-admin-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:2px;text-transform:uppercase;
+  color:var(--green);padding:8px 20px 14px;border-bottom:1px solid var(--border2);}
+.sidebar-nav{flex:1;padding:14px 10px;}
+.nav-item{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:7px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;
+  color:var(--muted);transition:background .2s,color .2s;margin-bottom:3px;border:none;width:100%;text-align:left;background:transparent;}
+.nav-item:hover{background:var(--green-dim);color:var(--text);}
+.nav-item.active{background:var(--green-dim);color:var(--green);border:1px solid var(--border);}
+.nav-icon{font-size:15px;width:20px;text-align:center;flex-shrink:0;}
+.sidebar-footer{padding:14px 10px;border-top:1px solid var(--border2);}
+.logout-btn{display:flex;align-items:center;gap:12px;padding:11px 14px;border-radius:7px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;
+  color:var(--red);width:100%;border:none;background:transparent;transition:background .2s;}
+.logout-btn:hover{background:rgba(255,68,68,0.08);}
+
+/* MAIN */
+.main-content{flex:1;overflow-y:auto;background:var(--dark);}
+.topbar{position:sticky;top:0;z-index:9;background:rgba(10,15,10,0.95);backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border2);padding:16px 28px;display:flex;align-items:center;justify-content:space-between;}
+.topbar-title{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;letter-spacing:2px;color:var(--white);}
+.topbar-date{font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:1px;color:var(--muted);text-transform:uppercase;}
+.topbar-right{display:flex;align-items:center;gap:16px;}
+.sync-indicator{display:flex;align-items:center;gap:7px;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.sync-dot{width:8px;height:8px;border-radius:50%;background:var(--muted);transition:background .3s;}
+.sync-dot.syncing{background:var(--gold);animation:pulse 1s infinite;}
+.sync-dot.synced{background:var(--green);}
+.sync-dot.error{background:var(--red);}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.4;}}
+
+.page-content{padding:28px;display:none;}
+.page-content.active{display:block;}
+
+/* METRIC CARDS */
+.metrics-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:28px;}
+.metric-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;transition:border-color .2s;}
+.metric-card:hover{border-color:var(--green);}
+.metric-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px;}
+.metric-value{font-family:'Bebas Neue',sans-serif;font-size:2.2rem;letter-spacing:1px;color:var(--white);line-height:1;}
+.metric-value.green{color:var(--green);} .metric-value.gold{color:var(--gold);}
+.metric-sub{font-size:0.78rem;color:var(--muted);margin-top:6px;}
+.metric-sub.up{color:var(--green);}
+
+/* CHART CARD */
+.chart-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:24px;margin-bottom:28px;}
+.chart-card-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;}
+.chart-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--text);}
+.chart-filter-btns{display:flex;gap:6px;}
+.cfbtn{padding:5px 14px;border-radius:5px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;
+  text-transform:uppercase;background:transparent;color:var(--muted);border:1px solid var(--border);transition:all .2s;}
+.cfbtn.active,.cfbtn:hover{background:var(--green-dim);color:var(--green);}
+
+/* TABLES */
+.table-card{background:var(--card);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:28px;}
+.table-card-header{display:flex;align-items:center;justify-content:space-between;padding:18px 22px;border-bottom:1px solid var(--border2);}
+.table-card-title{font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--text);}
+.table-search{padding:7px 14px;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);
+  font-family:'Barlow',sans-serif;font-size:0.85rem;outline:none;width:220px;}
+.table-search:focus{border-color:var(--green);}
+table{width:100%;border-collapse:collapse;}
+thead th{background:var(--dark3);font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:2px;
+  text-transform:uppercase;color:var(--muted);padding:12px 18px;text-align:left;}
+tbody tr{border-bottom:1px solid var(--border2);transition:background .15s;}
+tbody tr:last-child{border-bottom:none;}
+tbody tr:hover{background:var(--card2);}
+tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-family:'Barlow Condensed',sans-serif;
+  font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.badge-green{background:rgba(0,200,83,0.15);color:var(--green);}
+.badge-gold{background:rgba(255,214,0,0.15);color:var(--gold);}
+.badge-blue{background:rgba(33,150,243,0.15);color:var(--blue);}
+.badge-red{background:rgba(255,68,68,0.15);color:var(--red);}
+.badge-orange{background:rgba(255,152,0,0.15);color:var(--orange);}
+.badge-muted{background:rgba(122,158,122,0.1);color:var(--muted);}
+.mpesa-code{font-family:monospace;font-size:0.82rem;color:var(--muted);background:var(--dark3);padding:2px 7px;border-radius:4px;}
+.amount-cell{font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--green);letter-spacing:1px;}
+.empty-state{text-align:center;padding:50px 20px;color:var(--muted);font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;letter-spacing:1px;text-transform:uppercase;}
+.source-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.source-auto{color:var(--green);}
+
+/* FORM */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.form-group{margin-bottom:18px;}
+.form-label{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:7px;display:block;}
+.form-input,.form-select{width:100%;padding:11px 14px;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);
+  font-family:'Barlow',sans-serif;font-size:0.95rem;outline:none;transition:border-color .2s;}
+.form-input:focus,.form-select:focus{border-color:var(--green);}
+.form-select option{background:var(--dark2);}
+.btn-submit{padding:12px 32px;background:var(--green);color:var(--dark);border:none;border-radius:6px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;transition:background .2s;}
+.btn-submit:hover{background:#00e564;}
+.btn-danger{padding:6px 12px;background:transparent;border:1px solid rgba(255,68,68,0.3);color:var(--red);border-radius:5px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;transition:background .2s;}
+.btn-danger:hover{background:rgba(255,68,68,0.1);}
+.btn-secondary{padding:10px 22px;background:transparent;border:1px solid var(--border);color:var(--text);border-radius:6px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.9rem;letter-spacing:2px;text-transform:uppercase;transition:all .2s;}
+.btn-secondary:hover{border-color:var(--green);color:var(--green);}
+.success-toast{position:fixed;bottom:28px;right:28px;z-index:9999;background:var(--green);color:var(--dark);
+  padding:13px 22px;border-radius:8px;font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:0.9rem;letter-spacing:1px;
+  transform:translateY(80px);opacity:0;transition:all .3s ease;}
+.success-toast.show{transform:translateY(0);opacity:1;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:22px;}
+.section-title{font-family:'Bebas Neue',sans-serif;font-size:1.6rem;letter-spacing:2px;color:var(--white);}
+.section-tag-label{font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:2px;text-transform:uppercase;color:var(--green);}
+.pagination{display:flex;gap:6px;justify-content:flex-end;padding:14px 18px;flex-wrap:wrap;}
+.pg-btn{padding:6px 12px;border-radius:5px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:0.8rem;letter-spacing:1px;
+  background:transparent;color:var(--muted);border:1px solid var(--border);transition:all .2s;}
+.pg-btn.active,.pg-btn:hover{background:var(--green-dim);color:var(--green);}
+
+/* WEBHOOK PAGE */
+.webhook-status-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:26px;margin-bottom:22px;}
+.wh-status-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;flex-wrap:wrap;gap:12px;}
+.wh-status-left{display:flex;align-items:center;gap:14px;}
+.wh-status-icon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;}
+.wh-status-icon.connected{background:rgba(0,200,83,0.15);border:1px solid rgba(0,200,83,0.3);}
+.wh-status-icon.disconnected{background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.2);}
+.wh-status-title{font-family:'Barlow Condensed',sans-serif;font-size:1rem;letter-spacing:1px;text-transform:uppercase;font-weight:700;}
+.wh-status-subtitle{font-size:0.82rem;color:var(--muted);margin-top:3px;}
+.wh-url-box{background:var(--dark3);border:1px solid var(--border2);border-radius:7px;padding:14px 18px;display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;flex-wrap:wrap;}
+.wh-url-text{font-family:monospace;font-size:0.88rem;color:var(--green);word-break:break-all;}
+.btn-copy{padding:7px 16px;background:var(--green-dim);border:1px solid var(--border);color:var(--green);border-radius:5px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;transition:all .2s;white-space:nowrap;}
+.btn-copy:hover{background:rgba(0,200,83,0.22);}
+.wh-info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:18px;}
+.wh-info-cell{background:var(--dark3);border-radius:7px;padding:14px 16px;}
+.wh-info-label{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px;}
+.wh-info-value{font-family:'Bebas Neue',sans-serif;font-size:1.4rem;color:var(--white);}
+.wh-info-value.green{color:var(--green);}
+.divider{border:none;border-top:1px solid var(--border2);margin:22px 0;}
+.pkg-map-table{width:100%;border-collapse:collapse;}
+.pkg-map-table th{font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;background:var(--dark3);}
+.pkg-map-table td{padding:11px 14px;border-bottom:1px solid var(--border2);font-size:0.88rem;}
+.pkg-map-table tr:last-child td{border-bottom:none;}
+.amount-range{font-family:monospace;color:var(--gold);font-size:0.85rem;}
+.log-entry{display:flex;align-items:flex-start;gap:12px;padding:11px 0;border-bottom:1px solid var(--border2);}
+.log-entry:last-child{border-bottom:none;}
+.log-time{font-family:monospace;font-size:0.78rem;color:var(--muted);white-space:nowrap;padding-top:2px;}
+.log-msg{font-size:0.88rem;flex:1;}
+.log-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;margin-top:5px;}
+.log-dot.ok{background:var(--green);}
+.log-dot.warn{background:var(--gold);}
+.log-dot.err{background:var(--red);}
+.empty-log{font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);text-align:center;padding:30px;}
+/* SMS Manager */
+.sms-template-box{background:var(--dark3);border:1px solid var(--border);border-radius:8px;padding:18px 20px;margin-bottom:18px;}
+.sms-template-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;}
+.sms-template-title{font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);}
+.sms-counter{font-family:monospace;font-size:0.78rem;color:var(--muted);}
+.sms-counter.warn{color:var(--gold);}
+.sms-counter.over{color:var(--red);}
+.sms-recipient-badge{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;background:var(--green-dim);border:1px solid var(--border);border-radius:7px;margin-bottom:18px;}
+.sms-recipient-count{font-family:'Bebas Neue',sans-serif;font-size:2rem;color:var(--green);letter-spacing:1px;line-height:1;}
+.sms-recipient-label{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);}
+.sms-send-btn{padding:12px 32px;background:linear-gradient(135deg,#00c853,#007c2e);color:var(--white);border:none;border-radius:7px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-weight:700;font-size:1rem;letter-spacing:2px;text-transform:uppercase;transition:all .2s;box-shadow:0 4px 15px rgba(0,200,83,0.25);}
+.sms-send-btn:hover{transform:translateY(-1px);box-shadow:0 6px 20px rgba(0,200,83,0.35);}
+.sms-send-btn:disabled{opacity:0.5;cursor:not-allowed;transform:none;}
+.campaign-row{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border2);}
+.campaign-row:last-child{border-bottom:none;}
+.campaign-time{font-family:monospace;font-size:0.78rem;color:var(--muted);white-space:nowrap;padding-top:3px;}
+.campaign-pkg{display:inline-block;padding:2px 8px;border-radius:12px;font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:1px;text-transform:uppercase;background:var(--green-dim);color:var(--green);border:1px solid var(--border);margin-bottom:4px;}
+.campaign-msg{font-size:0.9rem;color:var(--text);line-height:1.5;}
+.campaign-stats{display:flex;gap:12px;margin-top:6px;font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;}
+.campaign-stat-sent{color:var(--green);}
+.campaign-stat-failed{color:var(--red);}
+/* Advanced Filters */
+.filter-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:14px 18px;border-bottom:1px solid var(--border2);background:var(--dark3);}
+.filter-select{padding:7px 12px;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);
+  font-family:'Barlow Condensed',sans-serif;font-size:0.82rem;letter-spacing:1px;outline:none;cursor:pointer;}
+.filter-select:focus{border-color:var(--green);}
+.filter-date{padding:7px 10px;background:var(--dark2);border:1px solid var(--border);border-radius:6px;color:var(--text);
+  font-family:'Barlow',sans-serif;font-size:0.82rem;outline:none;}
+.filter-date:focus{border-color:var(--green);}
+.filter-label{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:1px;text-transform:uppercase;color:var(--muted);white-space:nowrap;}
+.btn-csv{padding:7px 16px;background:transparent;border:1px solid rgba(0,200,83,0.3);color:var(--green);border-radius:6px;cursor:pointer;
+  font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;transition:all .2s;white-space:nowrap;}
+.btn-csv:hover{background:var(--green-dim);}
+/* Analytics extras */
+.analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
+.metric-card-wide{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;}
+.metric-card-wide:hover{border-color:var(--green);}
+</style>
+</head>
+<body>
+
+<!-- Login screen handled by login.html server-side -->
+
+<!-- ADMIN -->
+<div id="admin-screen">
+  <div class="admin-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-star"></div>
+        <div class="sidebar-logo-text">Soka<span>star</span></div>
+      </div>
+      <div class="sidebar-admin-tag">Admin Panel</div>
+      <nav class="sidebar-nav">
+        <button class="nav-item active" onclick="showPage('dashboard',this)">
+          <span class="nav-icon">◈</span><span>Dashboard</span>
+        </button>
+        <button class="nav-item" onclick="showPage('add-transaction',this)">
+          <span class="nav-icon">+</span><span>Add Transaction</span>
+        </button>
+        <button class="nav-item" onclick="showPage('transactions',this)">
+          <span class="nav-icon">≡</span><span>Transactions</span>
+        </button>
+        <button class="nav-item" onclick="showPage('subscribers',this)">
+          <span class="nav-icon">◎</span><span>Subscribers</span>
+        </button>
+        <button class="nav-item" onclick="showPage('sms',this)">
+          <span class="nav-icon">✉</span><span>SMS Manager</span>
+        </button>
+        <button class="nav-item" onclick="showPage('webhook',this)">
+          <span class="nav-icon">⚡</span><span>Daraja API</span>
+        </button>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="logout-btn" onclick="doLogout()">
+          <span class="nav-icon">⏻</span><span>Logout</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-content">
+      <div class="topbar">
+        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-right">
+          <div class="sync-indicator" id="sync-indicator" style="display:none;">
+            <div class="sync-dot" id="sync-dot"></div>
+            <span id="sync-label">Synced</span>
+          </div>
+          <div class="topbar-date" id="topbar-date"></div>
+        </div>
+      </div>
+
+      <!-- DASHBOARD -->
+      <div class="page-content active" id="page-dashboard">
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-label">Today's Revenue</div>
+            <div class="metric-value green" id="m-today">KES 0</div>
+            <div class="metric-sub up" id="m-today-count">0 transactions</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">This Month</div>
+            <div class="metric-value gold" id="m-month">KES 0</div>
+            <div class="metric-sub" id="m-month-count">0 transactions</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Total Revenue</div>
+            <div class="metric-value" id="m-total">KES 0</div>
+            <div class="metric-sub" id="m-total-count">All time</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">Unique Subscribers</div>
+            <div class="metric-value green" id="m-subs">0</div>
+            <div class="metric-sub">Unique phone numbers</div>
+          </div>
+        </div>
+        <!-- Extra Analytics Row -->
+        <div class="analytics-grid">
+          <div class="metric-card-wide">
+            <div class="metric-label">Avg. Transaction Value</div>
+            <div class="metric-value gold" id="m-atv">KES 0</div>
+            <div class="metric-sub" id="m-atv-sub">per payment</div>
+          </div>
+          <div class="metric-card-wide">
+            <div class="metric-label">Repeat Customer Rate</div>
+            <div class="metric-value green" id="m-repeat">0%</div>
+            <div class="metric-sub" id="m-repeat-sub">paid more than once</div>
+          </div>
+        </div>
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">Daily Revenue</div>
+            <div class="chart-filter-btns">
+              <button class="cfbtn active" onclick="setChartPeriod(7,this)">7 Days</button>
+              <button class="cfbtn" onclick="setChartPeriod(14,this)">14 Days</button>
+              <button class="cfbtn" onclick="setChartPeriod(30,this)">30 Days</button>
+            </div>
+          </div>
+          <div style="position:relative;width:100%;height:260px;">
+            <canvas id="revenueChart"></canvas>
+          </div>
+        </div>
+        <!-- Row: Package + Subscriber Status side by side -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;">
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-card-header"><div class="chart-card-title">Revenue by Package</div></div>
+            <div style="position:relative;width:100%;height:220px;">
+              <canvas id="packageChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card" style="margin-bottom:0;">
+            <div class="chart-card-header"><div class="chart-card-title">Subscriber Status</div></div>
+            <div style="position:relative;width:100%;height:220px;display:flex;align-items:center;justify-content:center;">
+              <canvas id="subStatusChart"></canvas>
+            </div>
+          </div>
+        </div>
+        <!-- Hourly Payment Heatmap -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">Payments by Hour of Day</div>
+            <div style="font-size:0.75rem;color:var(--muted);font-family:'Barlow Condensed',sans-serif;letter-spacing:1px;">Best time to send bulk SMS ↑</div>
+          </div>
+          <div style="position:relative;width:100%;height:180px;">
+            <canvas id="hourlyChart"></canvas>
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="table-card-header">
+            <div class="table-card-title">Recent Transactions</div>
+          </div>
+          <table>
+            <thead><tr><th>Date / Time</th><th>Name</th><th>Phone</th><th>Package</th><th>M-Pesa Code</th><th>Amount</th><th>Source</th></tr></thead>
+            <tbody id="dash-recent-tbody"><tr><td colspan="7" class="empty-state">No transactions yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ADD TRANSACTION -->
+      <div class="page-content" id="page-add-transaction">
+        <div class="section-header">
+          <div><div class="section-tag-label">Record Payment</div><div class="section-title">Add Transaction</div></div>
+        </div>
+        <div class="table-card" style="padding:28px;">
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label">Name (optional)</label>
+              <input type="text" class="form-input" id="f-name" placeholder="e.g. John Doe">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Phone Number *</label>
+              <input type="tel" class="form-input" id="f-phone" placeholder="e.g. 0722 000 000">
+            </div>
+            <div class="form-group">
+              <label class="form-label">M-Pesa Transaction Code *</label>
+              <input type="text" class="form-input" id="f-mpesa" placeholder="e.g. SIH7X89ZKQ" style="text-transform:uppercase;">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Amount Paid (KES) *</label>
+              <input type="number" class="form-input" id="f-amount" placeholder="e.g. 250" min="1">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Subscription Package *</label>
+              <select class="form-select" id="f-package">
+                <option value="">Select package...</option>
+                <option value="Daily">Daily — KES 250</option>
+                <option value="Super MultiBet">Super MultiBet — KES 50</option>
+                <option value="MidWeek Jackpot">MidWeek Jackpot — KES 40</option>
+                <option value="Mega Jackpot">Mega Jackpot — KES 80</option>
+                <option value="Half Time Full Time">Half Time Full Time — KES 20</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Date *</label>
+              <input type="date" class="form-input" id="f-date">
+            </div>
+            <div class="form-group">
+              <label class="form-label">Time</label>
+              <input type="time" class="form-input" id="f-time">
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notes (optional)</label>
+            <input type="text" class="form-input" id="f-notes" placeholder="Any additional notes...">
+          </div>
+          <div id="form-error" style="color:var(--red);font-size:0.85rem;margin-bottom:14px;display:none;padding:10px 14px;background:rgba(255,68,68,0.08);border-radius:6px;border:1px solid rgba(255,68,68,0.2);"></div>
+          <button class="btn-submit" onclick="addTransaction()">Record Transaction</button>
+        </div>
+      </div>
+
+      <!-- ALL TRANSACTIONS -->
+      <div class="page-content" id="page-transactions">
+        <div class="section-header">
+          <div><div class="section-tag-label">Payment Records</div><div class="section-title">All Transactions</div></div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-csv" onclick="exportTxCSV()">⬇ Export CSV</button>
+            <input type="text" class="table-search" id="tx-search" placeholder="Search code or phone..." oninput="txPage=1;renderTransactions()">
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="filter-bar">
+            <span class="filter-label">Filter:</span>
+            <select class="filter-select" id="tx-pkg-filter" onchange="txPage=1;renderTransactions()">
+              <option value="">All Packages</option>
+              <option value="Daily">Daily</option>
+              <option value="Super MultiBet">Super MultiBet</option>
+              <option value="MidWeek Jackpot">MidWeek Jackpot</option>
+              <option value="Mega Jackpot">Mega Jackpot</option>
+              <option value="Half Time Full Time">Half Time Full Time</option>
+            </select>
+            <select class="filter-select" id="tx-src-filter" onchange="txPage=1;renderTransactions()">
+              <option value="">All Sources</option>
+              <option value="daraja">⚡ Auto (Daraja)</option>
+              <option value="manual">✎ Manual</option>
+            </select>
+            <select class="filter-select" id="tx-date-filter" onchange="onTxDateFilterChange()">
+              <option value="">All Dates</option>
+              <option value="today">Today</option>
+              <option value="7">Last 7 Days</option>
+              <option value="30">Last 30 Days</option>
+              <option value="custom">Custom Range</option>
+            </select>
+            <span id="tx-custom-dates" style="display:none;gap:6px;align-items:center;display:none;">
+              <input type="date" class="filter-date" id="tx-date-from" onchange="txPage=1;renderTransactions()">
+              <span style="color:var(--muted);font-size:0.8rem;">to</span>
+              <input type="date" class="filter-date" id="tx-date-to" onchange="txPage=1;renderTransactions()">
+            </span>
+          </div>
+          <table>
+            <thead><tr><th>#</th><th>Date / Time</th><th>Name</th><th>Phone</th><th>Package</th><th>M-Pesa Code</th><th>Amount (KES)</th><th>Source</th><th>Notes</th><th>Action</th></tr></thead>
+            <tbody id="tx-tbody"><tr><td colspan="10" class="empty-state">No transactions recorded yet</td></tr></tbody>
+          </table>
+          <div class="pagination" id="tx-pagination"></div>
+        </div>
+      </div>
+
+      <!-- SUBSCRIBERS -->
+      <div class="page-content" id="page-subscribers">
+        <div class="section-header">
+          <div><div class="section-tag-label">Members</div><div class="section-title">Subscribers</div></div>
+          <div style="display:flex;gap:10px;align-items:center;">
+            <button class="btn-csv" onclick="exportSubCSV()">⬇ Export CSV</button>
+            <input type="text" class="table-search" id="sub-search" placeholder="Search phone or name..." oninput="renderSubscribers()">
+          </div>
+        </div>
+        <div class="table-card">
+          <div class="filter-bar">
+            <span class="filter-label">Status:</span>
+            <select class="filter-select" id="sub-status-filter" onchange="renderSubscribers()">
+              <option value="">All Statuses</option>
+              <option value="active">Active Today</option>
+              <option value="recent">Recent (≤3 days)</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <span class="filter-label" style="margin-left:8px;">Package:</span>
+            <select class="filter-select" id="sub-pkg-filter" onchange="renderSubscribers()">
+              <option value="">All Packages</option>
+              <option value="Daily">Daily</option>
+              <option value="Super MultiBet">Super MultiBet</option>
+              <option value="MidWeek Jackpot">MidWeek Jackpot</option>
+              <option value="Mega Jackpot">Mega Jackpot</option>
+              <option value="Half Time Full Time">Half Time Full Time</option>
+            </select>
+          </div>
+          <table>
+            <thead><tr><th>Phone Number</th><th>Total Paid (KES)</th><th>Transactions</th><th>Packages Used</th><th>Last Payment</th><th>Status</th></tr></thead>
+            <tbody id="sub-tbody"><tr><td colspan="6" class="empty-state">No subscribers yet</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SMS MANAGER -->
+      <div class="page-content" id="page-sms">
+        <div class="section-header">
+          <div>
+            <div class="section-tag-label">Africa's Talking</div>
+            <div class="section-title" style="display:flex;align-items:center;gap:12px;">
+              <span>SMS Manager</span>
+              <span id="sms-global-status" class="badge badge-muted" style="font-size:0.72rem;padding:4px 10px;text-transform:none;">Checking...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bulk Campaign Composer -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">📢 Bulk SMS Campaign</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <div class="form-group">
+                <label class="form-label">Target Package</label>
+                <select class="form-select" id="sms-pkg" onchange="updateSmsEstimate()">
+                  <option value="All">All Packages</option>
+                  <option value="Daily">Daily (KES 250)</option>
+                  <option value="Super MultiBet">Super MultiBet (KES 50)</option>
+                  <option value="MidWeek Jackpot">MidWeek Jackpot (KES 40)</option>
+                  <option value="Mega Jackpot">Mega Jackpot (KES 80)</option>
+                  <option value="Half Time Full Time">Half Time Full Time (KES 20)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Active Within (days)</label>
+                <select class="form-select" id="sms-days" onchange="updateSmsEstimate()">
+                  <option value="0">All time</option>
+                  <option value="1">Today only</option>
+                  <option value="3">Last 3 days</option>
+                  <option value="7" selected>Last 7 days</option>
+                  <option value="30">Last 30 days</option>
+                </select>
+              </div>
+              <div style="margin-bottom:18px;">
+                <div class="form-label" style="margin-bottom:10px;">Estimated Recipients</div>
+                <div class="sms-recipient-badge">
+                  <div class="sms-recipient-count" id="sms-estimate">—</div>
+                  <div class="sms-recipient-label">unique numbers</div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <div class="form-group">
+                <div class="sms-template-header">
+                  <label class="form-label" style="margin-bottom:0;">Message</label>
+                  <span class="sms-counter" id="sms-char-count">0 / 160</span>
+                </div>
+                <textarea class="form-input" id="sms-message" rows="6" style="resize:vertical;min-height:120px;font-size:0.9rem;line-height:1.5;"
+                  placeholder="Type your message here... e.g. Today's Daily tips: Man Utd vs Arsenal — Over 2.5 goals. Good luck! 🤞" oninput="updateSmsCharCount()"></textarea>
+                <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">Messages over 160 chars will be split into 2 SMS. Keep it concise!</div>
+              </div>
+              <button class="sms-send-btn" id="sms-send-btn" onclick="sendBulkSMS()">✉ Send Campaign</button>
+              <div id="sms-send-result" style="margin-top:14px;display:none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Payment Confirmation Template -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">⚙ Auto-SMS on Payment</div>
+          </div>
+          <div style="font-size:0.88rem;color:var(--muted);line-height:1.7;margin-bottom:16px;">
+            When a customer pays, an SMS is automatically sent to their phone using the template below.<br>
+            Available placeholders: <code style="color:var(--green);background:var(--dark3);padding:1px 6px;border-radius:3px;">{name}</code>
+            <code style="color:var(--green);background:var(--dark3);padding:1px 6px;border-radius:3px;">{amount}</code>
+            <code style="color:var(--green);background:var(--dark3);padding:1px 6px;border-radius:3px;">{package}</code>
+            <code style="color:var(--green);background:var(--dark3);padding:1px 6px;border-radius:3px;">{mpesa}</code>
+          </div>
+          <div class="sms-template-box">
+            <div class="form-label" style="margin-bottom:8px;">Default Template (set SMS_PAYMENT_TEMPLATE env var on server to override)</div>
+            <div style="font-family:monospace;font-size:0.88rem;color:var(--text);line-height:1.6;padding:12px;background:var(--dark2);border-radius:6px;border:1px solid var(--border);">Hi {name}! We have received your KES {amount} payment for the {package} package. Receipt: {mpesa}. Good luck! - Sokastar</div>
+          </div>
+          <div style="font-size:0.82rem;color:var(--muted);">
+            SMS is only sent when <code style="color:var(--gold);">SMS_ENABLED=true</code> and <code style="color:var(--gold);">AFRICASTALKING_API_KEY</code> are set as environment variables on your server.
+          </div>
+        </div>
+
+        <!-- Campaign History -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">📋 Campaign History</div>
+            <button class="cfbtn" onclick="loadCampaigns()">⟳ Refresh</button>
+          </div>
+          <div id="campaigns-list"><div class="empty-log">Loading campaigns...</div></div>
+        </div>
+
+        <!-- SMS Delivery Logs -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">📄 SMS Delivery Logs</div>
+            <button class="cfbtn" onclick="loadSmsLogs()">⟳ Refresh</button>
+          </div>
+          <div id="sms-logs-list"><div class="empty-log">Loading logs...</div></div>
+        </div>
+      </div>
+
+      <!-- SAFARICOM DARAJA / WEBHOOK -->
+      <div class="page-content" id="page-webhook">
+        <div class="section-header">
+          <div><div class="section-tag-label">Payment Integration</div><div class="section-title">Safaricom Daraja API</div></div>
+          <div style="display:flex;gap:10px;">
+            <button class="btn-submit" onclick="registerDarajaUrls()" id="btn-register-urls" style="padding:10px 22px;">🔗 Register URLs with Safaricom</button>
+            <button class="btn-secondary" onclick="manualSync()">⟳ Sync Now</button>
+          </div>
+        </div>
+
+        <!-- Connection Status -->
+        <div class="webhook-status-card">
+          <div class="wh-status-row">
+            <div class="wh-status-left">
+              <div class="wh-status-icon" id="wh-icon" title="Connection Status" style="cursor:pointer;">⚡</div>
+              <div>
+                <div class="wh-status-title" id="wh-status-title">Not Configured</div>
+                <div class="wh-status-subtitle" id="wh-status-sub">Auto-receiving transactions from Safaricom Daraja C2B</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Hidden Developer Configuration Fields -->
+          <div id="wh-config-fields" style="display: none; margin-top: 20px; border-top: 1px dashed var(--border); padding-top: 20px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:15px;display:flex;justify-content:space-between;align-items:center;">
+              <span>🛠️ Developer Configurations (Locked)</span>
+              <button class="btn-submit" onclick="saveWebhookConfig()" style="padding:6px 14px;font-size:0.75rem;">Save Config</button>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Webhook Server URL</label>
+              <input type="url" class="form-input" id="wh-server-url" placeholder="https://your-server.railway.app">
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">
+                Your deployed Node.js server URL (e.g. Railway, Render, Fly.io)
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Admin API Key</label>
+              <input type="password" class="form-input" id="wh-api-key" placeholder="Your ADMIN_API_KEY from the server">
+              <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">
+                Set as <code style="color:var(--green);background:var(--dark3);padding:1px 5px;border-radius:3px;">ADMIN_API_KEY</code> environment variable on your server
+              </div>
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Auto-Sync Interval</label>
+              <select class="form-select" id="wh-interval" style="max-width:200px;">
+                <option value="5">Every 5 seconds</option>
+                <option value="30" selected>Every 30 seconds</option>
+                <option value="60">Every 1 minute</option>
+                <option value="300">Every 5 minutes</option>
+                <option value="0">Manual only</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Safaricom Daraja Callback URLs -->
+        <div class="webhook-status-card">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:14px;">
+            ⚡ Safaricom Daraja Callback URLs — register these with Safaricom
+          </div>
+
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Confirmation URL</div>
+          <div class="wh-url-box">
+            <span class="wh-url-text" id="wh-confirm-url">https://your-server.railway.app/webhook/c2b/confirm</span>
+            <button class="btn-copy" onclick="copyUrl('wh-confirm-url')">Copy</button>
+          </div>
+
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold);margin-bottom:8px;margin-top:14px;">Validation URL</div>
+          <div class="wh-url-box">
+            <span class="wh-url-text" id="wh-validate-url">https://your-server.railway.app/webhook/c2b/validate</span>
+            <button class="btn-copy" onclick="copyUrl('wh-validate-url')">Copy</button>
+          </div>
+
+          <div style="font-size:0.82rem;color:var(--muted);line-height:1.6;margin-top:14px;">
+            Click <strong style="color:var(--green);">Register URLs with Safaricom</strong> above to automatically register both URLs. Alternatively,
+            register them manually in <strong style="color:var(--text);">Safaricom Daraja Portal → C2B → Register URL</strong>.
+            Safaricom will POST payment data here after every M-Pesa payment to your Till.
+          </div>
+
+          <!-- Webhook Keep-Warm Guide -->
+          <div class="webhook-status-card" style="margin-top:20px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:14px;display:flex;align-items:center;gap:8px;">
+              <span>❄️ Webhook Keep-Warm Guide (Render Free Tier)</span>
+            </div>
+            <div style="font-size:0.88rem;color:var(--muted);line-height:1.6;">
+              Render's free tier automatically puts your server to sleep after 15 minutes of inactivity. When a customer attempts to pay, Safaricom's webhook hits a sleeping server, causing a timeout and a failed payment.
+              <br><br>
+              <strong>To keep your server warm:</strong>
+              <ol style="margin-left: 20px; margin-top: 8px;">
+                <li>Register for a free account at <a href="https://cron-job.org" target="_blank" style="color:var(--green);text-decoration:underline;">Cron-Job.org</a> or <a href="https://uptimerobot.com" target="_blank" style="color:var(--green);text-decoration:underline;">UptimeRobot</a>.</li>
+                <li>Create a new monitor/cron job.</li>
+                <li>Set the execution interval to every <strong>10 minutes</strong>.</li>
+                <li>Point the request URL to your server's health endpoint: <code style="color:var(--gold);background:var(--dark3);padding:2px 6px;border-radius:4px;" id="warm-url-display">https://your-server.railway.app/health</code></li>
+              </ol>
+            </div>
+          </div>
+
+          <!-- Registration Result -->
+          <div id="register-result" style="display:none; margin-top:14px; padding:12px 16px; border-radius:7px; font-size:0.88rem;"></div>
+
+          <hr class="divider">
+          <div class="wh-info-grid">
+            <div class="wh-info-cell">
+              <div class="wh-info-label">Auto-Received Transactions</div>
+              <div class="wh-info-value green" id="wh-auto-count">0</div>
+            </div>
+            <div class="wh-info-cell">
+              <div class="wh-info-label">Last Sync</div>
+              <div class="wh-info-value" id="wh-last-sync" style="font-size:0.95rem;font-family:'Barlow Condensed',sans-serif;margin-top:6px;">Never</div>
+            </div>
+            <div class="wh-info-cell">
+              <div class="wh-info-label">Server Status</div>
+              <div class="wh-info-value" id="wh-server-status" style="font-size:0.95rem;font-family:'Barlow Condensed',sans-serif;margin-top:6px;color:var(--muted);">Unknown</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Package Amount Mapping -->
+        <div class="webhook-status-card">
+          <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">
+            Package Detection — Amounts Mapped to Packages
+          </div>
+          <table class="pkg-map-table">
+            <thead><tr><th>Package</th><th>Amount Range (KES)</th><th>Auto-detected</th></tr></thead>
+            <tbody>
+              <tr><td><span class="badge badge-green">Daily</span></td><td><span class="amount-range">150 – 300</span></td><td style="color:var(--green);font-size:0.82rem;">✓ Yes</td></tr>
+              <tr><td><span class="badge badge-blue">Super MultiBet</span></td><td><span class="amount-range">45 – 64</span></td><td style="color:var(--green);font-size:0.82rem;">✓ Yes</td></tr>
+              <tr><td><span class="badge badge-gold">MidWeek Jackpot</span></td><td><span class="amount-range">30 – 44</span></td><td style="color:var(--green);font-size:0.82rem;">✓ Yes</td></tr>
+              <tr><td><span class="badge badge-gold">Mega Jackpot</span></td><td><span class="amount-range">65 – 149</span></td><td style="color:var(--green);font-size:0.82rem;">✓ Yes</td></tr>
+              <tr><td><span class="badge badge-red">Half Time Full Time</span></td><td><span class="amount-range">15 – 29</span></td><td style="color:var(--green);font-size:0.82rem;">✓ Yes</td></tr>
+              <tr><td><span class="badge badge-muted">Unknown</span></td><td><span class="amount-range">Any other amount</span></td><td style="color:var(--muted);font-size:0.82rem;">— Needs manual edit</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Activity Log -->
+        <div class="webhook-status-card">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+            <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.85rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);">
+              Sync Activity Log
+            </div>
+            <button class="btn-danger" style="font-size:0.68rem;" onclick="clearLog()">Clear</button>
+          </div>
+          <div id="wh-log"><div class="empty-log">No sync activity yet</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<div class="success-toast" id="toast"></div>
+
+<script>
+// configuration & constants
+const PACKAGES    = ['Daily','Super MultiBet','MidWeek Jackpot','Mega Jackpot','Half Time Full Time'];
+const PKG_COLORS  = ['#00c853','#2196f3','#ffd600','#ff9800','#e91e63'];
+
+function fetchTransactions() {
+  const url = `${webhookCfg.serverUrl.replace(/\/*$/,'')}/api/transactions`;
+  const headers = {};
+  if (webhookCfg.apiKey) {
+    headers['X-Api-Key'] = webhookCfg.apiKey;
+  }
+  fetch(url, {
+    method: 'GET',
+    headers: headers
+  })
+    .then(r => {
+      if (!r.ok) throw new Error('Failed to fetch transactions (status ' + r.status + ')');
+      return r.json();
+    })
+    .then(data => {
+      if (Array.isArray(data)) {
+        // Replace local DB with fresh data and persist
+        db.transactions = data;
+        saveDB();
+        refreshDashboard();
+        showToast('Synced latest transactions from server');
+      }
+    })
+    .catch(err => {
+      console.error('Sync error:', err);
+      showToast('Sync failed – check console');
+    });
+}
+
+
+// Package amount ranges — must match server.js pkgMap
+const PKG_MAP = [
+  { min:150, max:300, name:'Daily' },
+  { min:45,  max:64,  name:'Super MultiBet' },
+  { min:30,  max:44,  name:'MidWeek Jackpot' },
+  { min:65,  max:149, name:'Mega Jackpot' },
+  { min:15,  max:29,  name:'Half Time Full Time' },
+];
+
+// application state
+let db = { transactions: [] };
+let revenueChart = null, packageChart = null, subStatusChart = null, hourlyChart = null;
+let txPage = 1; const TX_PER_PAGE = 50;
+let chartDays = 7;
+let syncTimer  = null;
+let webhookCfg = { serverUrl: window.location.origin, apiKey: '', interval: 30 };
+let syncLog    = [];
+
+// storage helper methods
+function saveDB()  { try { localStorage.setItem('sokastar_db', JSON.stringify(db)); } catch(e){} }
+function loadDB()  { try { const r = localStorage.getItem('sokastar_db'); if(r) db = JSON.parse(r); } catch(e){} }
+
+function saveWebhookCfg() { try { localStorage.setItem('sokastar_wh', JSON.stringify(webhookCfg)); } catch(e){} }
+function loadWebhookCfg() {
+  try { const r = localStorage.getItem('sokastar_wh'); if(r) webhookCfg = JSON.parse(r); } catch(e){}
+  // Backfill connection defaults so the dashboard auto-syncs with no manual setup
+  if (!webhookCfg.serverUrl) webhookCfg.serverUrl = window.location.origin;
+  if (webhookCfg.apiKey === 'sokastar-20-26') webhookCfg.apiKey = '';
+  if (!webhookCfg.interval || webhookCfg.interval === 5 || webhookCfg.interval === 60) webhookCfg.interval = 30;
+}
+
+function saveLog() { try { localStorage.setItem('sokastar_log', JSON.stringify(syncLog.slice(-100))); } catch(e){} }
+function loadLog() { try { const r = localStorage.getItem('sokastar_log'); if(r) syncLog = JSON.parse(r); } catch(e){} }
+
+// Buy Goods (till) C2B callbacks deliver a hashed MSISDN, not a real phone
+// (and only the customer's first name). Detect the hash and show the full name
+// we have + M-Pesa code instead of the raw hash.
+function isHashedMsisdn(p){ return /^[a-f0-9]{32,}$/i.test(String(p || '')); }
+function fullNameOf(name){ return (String(name || '').trim()) || 'Customer'; }
+function payerCell(t){
+  if (!isHashedMsisdn(t.phone)) return t.phone || '—';
+  return `${fullNameOf(t.name)} <span class="mpesa-code">${t.mpesa || '—'}</span>`;
+}
+function subscriberLabel(s){
+  if (!isHashedMsisdn(s.phone)) return s.phone;
+  return `${fullNameOf(s.name)} <span style="font-size:0.74rem;color:var(--muted);font-weight:400;">· till …${String(s.phone).slice(-6)}</span>`;
+}
+
+// auth logic
+async function doLogout() {
+  stopSync();
+  try {
+    await fetch('/api/logout', { method: 'POST' });
+  } catch (_) {}
+  window.location.href = '/login';
+}
+
+// page navigation
+function showPage(name, btn) {
+  document.querySelectorAll('.page-content').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  btn.classList.add('active');
+  const titles = { dashboard:'Dashboard', 'add-transaction':'Add Transaction', transactions:'Transactions', subscribers:'Subscribers', webhook:'Safaricom Daraja API', sms:'SMS Manager' };
+  document.getElementById('topbar-title').textContent = titles[name] || name;
+  if (name === 'dashboard')       refreshDashboard();
+  if (name === 'transactions')    { txPage = 1; renderTransactions(); }
+  if (name === 'subscribers')     renderSubscribers();
+  if (name === 'webhook')         renderWebhookPage();
+  if (name === 'sms')             { loadSmsStatus(); loadCampaigns(); loadSmsLogs(); updateSmsEstimate(); }
+}
+
+function initAdmin() {
+  const now = new Date();
+  document.getElementById('topbar-date').textContent =
+    now.toLocaleDateString('en-KE', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+  document.getElementById('f-date').value = toLocalDateStr(now);
+  document.getElementById('f-time').value = now.toTimeString().slice(0, 5);
+  refreshDashboard();
+  startSync();
+
+  // click icon 5 times to toggle developer settings
+  let whIconClicks = 0;
+  const whIcon = document.getElementById('wh-icon');
+  if (whIcon) {
+    whIcon.addEventListener('click', () => {
+      whIconClicks++;
+      if (whIconClicks >= 5) {
+        const fields = document.getElementById('wh-config-fields');
+        if (fields) {
+          const isHidden = fields.style.display === 'none';
+          fields.style.display = isHidden ? 'block' : 'none';
+          whIconClicks = 0;
+          showToast(isHidden ? 'Settings Unlocked' : 'Settings Locked');
+        }
+      }
+    });
+  }
+}
+
+// dashboard rendering
+function refreshDashboard() {
+  const now      = new Date();
+  const todayStr = toLocalDateStr(now);
+  const monthStr = todayStr.slice(0, 7);
+  const todayTx  = db.transactions.filter(t => t.date === todayStr);
+  const monthTx  = db.transactions.filter(t => t.date.startsWith(monthStr));
+  const todayAmt = todayTx.reduce((s,t) => s + Number(t.amount), 0);
+  const monthAmt = monthTx.reduce((s,t) => s + Number(t.amount), 0);
+  const totalAmt = db.transactions.reduce((s,t) => s + Number(t.amount), 0);
+  const uniqueNums = new Set(db.transactions.map(t => t.phone)).size;
+
+  // ATV & Repeat Rate
+  const totalCount = db.transactions.length;
+  const atv = totalCount > 0 ? Math.round(totalAmt / totalCount) : 0;
+  const phoneGroups = {};
+  db.transactions.forEach(t => { phoneGroups[t.phone] = (phoneGroups[t.phone] || 0) + 1; });
+  const repeaters = Object.values(phoneGroups).filter(c => c > 1).length;
+  const repeatRate = uniqueNums > 0 ? Math.round((repeaters / uniqueNums) * 100) : 0;
+
+  document.getElementById('m-today').textContent       = 'KES ' + todayAmt.toLocaleString();
+  document.getElementById('m-today-count').textContent = todayTx.length + ' transaction' + (todayTx.length !== 1 ? 's' : '');
+  document.getElementById('m-month').textContent       = 'KES ' + monthAmt.toLocaleString();
+  document.getElementById('m-month-count').textContent = monthTx.length + ' transactions';
+  document.getElementById('m-total').textContent       = 'KES ' + totalAmt.toLocaleString();
+  document.getElementById('m-total-count').textContent = db.transactions.length + ' total records';
+  document.getElementById('m-subs').textContent        = uniqueNums;
+  document.getElementById('m-atv').textContent         = 'KES ' + atv.toLocaleString();
+  document.getElementById('m-atv-sub').textContent     = totalCount + ' total payments';
+  document.getElementById('m-repeat').textContent      = repeatRate + '%';
+  document.getElementById('m-repeat-sub').textContent  = repeaters + ' of ' + uniqueNums + ' subscribers';
+
+  buildRevenueChart(chartDays);
+  buildPackageChart();
+  buildSubStatusChart();
+  buildHourlyChart();
+
+  const recent = [...db.transactions].reverse().slice(0, 8);
+  const tbody  = document.getElementById('dash-recent-tbody');
+  if (!recent.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No transactions yet</td></tr>';
+  } else {
+    tbody.innerHTML = recent.map(t => `<tr>
+      <td style="color:var(--muted);font-size:0.82rem;">${fmtDT(t.date, t.time)}</td>
+      <td><strong>${t.name || '—'}</strong></td>
+      <td>${payerCell(t)}</td>
+      <td><span class="badge ${pkgBadge(t.package)}">${t.package || '—'}</span></td>
+      <td><span class="mpesa-code">${t.mpesa}</span></td>
+      <td class="amount-cell">${Number(t.amount).toLocaleString()}</td>
+      <td><span class="source-tag ${t.source === 'daraja' ? 'source-auto' : ''}">${t.source === 'daraja' ? '⚡ Auto' : '✎ Manual'}</span></td>
+    </tr>`).join('');
+  }
+}
+
+function buildRevenueChart(days) {
+  const labels = [], data = [];
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const ds = toLocalDateStr(d);
+    labels.push(d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }));
+    data.push(db.transactions.filter(t => t.date === ds).reduce((s,t) => s + Number(t.amount), 0));
+  }
+  const ctx = document.getElementById('revenueChart').getContext('2d');
+  if (revenueChart) revenueChart.destroy();
+  revenueChart = new Chart(ctx, {
+    type: 'bar',
+    data: { labels, datasets: [{ label:'Revenue (KES)', data,
+      backgroundColor: data.map((_,i) => i === data.length-1 ? '#00c853' : 'rgba(0,200,83,0.38)'),
+      borderRadius: 5, borderSkipped: false }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>' KES '+Number(c.raw).toLocaleString()}} },
+      scales: {
+        x: { grid:{color:'rgba(0,200,83,0.06)'}, ticks:{color:'#7a9e7a',font:{size:11}} },
+        y: { grid:{color:'rgba(0,200,83,0.06)'}, ticks:{color:'#7a9e7a',font:{size:11},callback:v=>'KES '+v.toLocaleString()} }
+      }}
+  });
+}
+
+function buildPackageChart() {
+  const amounts = {}; PACKAGES.forEach(p => { amounts[p] = 0; });
+  db.transactions.forEach(t => { if (amounts[t.package] !== undefined) amounts[t.package] += Number(t.amount); });
+  const ctx2 = document.getElementById('packageChart').getContext('2d');
+  if (packageChart) packageChart.destroy();
+  packageChart = new Chart(ctx2, {
+    type: 'bar',
+    data: { labels: PACKAGES.map(p => p.length > 20 ? p.slice(0,20) + '…' : p),
+      datasets: [{ label:'Revenue (KES)', data: PACKAGES.map(p => amounts[p]),
+        backgroundColor: PKG_COLORS.map(c => c + 'bb'), borderRadius: 5 }] },
+    options: { responsive:true, maintainAspectRatio:false, indexAxis:'y',
+      plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>' KES '+Number(c.raw).toLocaleString()}} },
+      scales: {
+        x: { grid:{color:'rgba(0,200,83,0.06)'}, ticks:{color:'#7a9e7a',font:{size:11},callback:v=>'KES '+v.toLocaleString()} },
+        y: { grid:{color:'rgba(0,200,83,0.06)'}, ticks:{color:'#7a9e7a',font:{size:11}} }
+      }}
+  });
+}
+
+function buildSubStatusChart() {
+  const today = toLocalDateStr(new Date());
+  const phones = {};
+  db.transactions.forEach(t => {
+    if (!phones[t.phone] || t.date > phones[t.phone]) phones[t.phone] = t.date;
+  });
+  let active = 0, recent = 0, inactive = 0;
+  Object.values(phones).forEach(lastDate => {
+    const days = Math.floor((new Date(today) - new Date(lastDate)) / 86400000);
+    if (days === 0) active++;
+    else if (days <= 3) recent++;
+    else inactive++;
+  });
+  const ctx3 = document.getElementById('subStatusChart').getContext('2d');
+  if (subStatusChart) subStatusChart.destroy();
+  subStatusChart = new Chart(ctx3, {
+    type: 'doughnut',
+    data: {
+      labels: ['Active Today', 'Recent (≤3d)', 'Inactive'],
+      datasets: [{ data: [active, recent, inactive],
+        backgroundColor: ['rgba(0,200,83,0.8)','rgba(33,150,243,0.8)','rgba(255,68,68,0.8)'],
+        borderColor: ['#00c853','#2196f3','#ff4444'],
+        borderWidth: 2, hoverOffset: 6 }]
+    },
+    options: { responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins: { legend:{position:'right',labels:{color:'#7a9e7a',font:{size:11},boxWidth:12,padding:14}},
+        tooltip:{callbacks:{label:c=>` ${c.label}: ${c.raw} subscribers`}} }
+    }
+  });
+}
+
+function buildHourlyChart() {
+  const hourCounts = Array(24).fill(0);
+  db.transactions.forEach(t => {
+    if (t.time) {
+      const h = parseInt(t.time.split(':')[0], 10);
+      if (h >= 0 && h < 24) hourCounts[h]++;
+    }
+  });
+  const labels = Array.from({length:24}, (_, i) => i === 0 ? '12am' : i < 12 ? `${i}am` : i === 12 ? '12pm' : `${i-12}pm`);
+  const maxH = Math.max(...hourCounts);
+  const ctx4 = document.getElementById('hourlyChart').getContext('2d');
+  if (hourlyChart) hourlyChart.destroy();
+  hourlyChart = new Chart(ctx4, {
+    type: 'bar',
+    data: { labels, datasets: [{ label:'Payments', data: hourCounts,
+      backgroundColor: hourCounts.map(v => v === maxH && maxH > 0 ? '#ffd600cc' : 'rgba(0,200,83,0.38)'),
+      borderRadius: 3, borderSkipped: false }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{display:false}, tooltip:{callbacks:{label:c=>` ${c.raw} payment${c.raw!==1?'s':''}`}} },
+      scales: {
+        x: { grid:{color:'rgba(0,200,83,0.04)'}, ticks:{color:'#7a9e7a',font:{size:9},maxRotation:0} },
+        y: { grid:{color:'rgba(0,200,83,0.06)'}, ticks:{color:'#7a9e7a',font:{size:10},stepSize:1} }
+      }}
+  });
+}
+
+function setChartPeriod(d, btn) {
+  chartDays = d;
+  document.querySelectorAll('.cfbtn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  buildRevenueChart(d);
+}
+
+// transactions management
+function addTransaction() {
+  const name   = document.getElementById('f-name').value.trim();
+  const phone  = document.getElementById('f-phone').value.trim();
+  const mpesa  = document.getElementById('f-mpesa').value.trim().toUpperCase();
+  const amount = document.getElementById('f-amount').value.trim();
+  const pkg    = document.getElementById('f-package').value;
+  const date   = document.getElementById('f-date').value;
+  const time   = document.getElementById('f-time').value;
+  const notes  = document.getElementById('f-notes').value.trim();
+  const errDiv = document.getElementById('form-error');
+
+  if (!phone || !mpesa || !amount || !pkg || !date) {
+    errDiv.textContent = 'Please fill in all required fields (marked with *).';
+    errDiv.style.display = 'block'; return;
+  }
+  if (isNaN(amount) || Number(amount) <= 0) {
+    errDiv.textContent = 'Please enter a valid amount greater than 0.';
+    errDiv.style.display = 'block'; return;
+  }
+  if (db.transactions.some(t => t.mpesa === mpesa)) {
+    errDiv.textContent = 'This M-Pesa transaction code already exists in the database.';
+    errDiv.style.display = 'block'; return;
+  }
+  errDiv.style.display = 'none';
+
+  db.transactions.push({ id:Date.now(), name, phone, mpesa, amount:Number(amount), package:pkg, date, time:time||'00:00', notes, source:'manual' });
+  saveDB();
+
+  document.getElementById('f-name').value   = '';
+  document.getElementById('f-phone').value   = '';
+  document.getElementById('f-mpesa').value   = '';
+  document.getElementById('f-amount').value  = '';
+  document.getElementById('f-package').value = '';
+  document.getElementById('f-notes').value   = '';
+  const n = new Date();
+  document.getElementById('f-date').value = toLocalDateStr(n);
+  document.getElementById('f-time').value = n.toTimeString().slice(0, 5);
+  showToast('Transaction recorded successfully!');
+}
+
+function renderTransactions() {
+  const q   = (document.getElementById('tx-search').value || '').toLowerCase();
+  const pkg = document.getElementById('tx-pkg-filter').value;
+  const src = document.getElementById('tx-src-filter').value;
+  const drf = document.getElementById('tx-date-filter').value;
+  const today = toLocalDateStr(new Date());
+
+  let rows = [...db.transactions].reverse().filter(t => {
+    if (q && !t.mpesa.toLowerCase().includes(q) && !t.phone.includes(q) && !(t.notes||'').toLowerCase().includes(q)) return false;
+    if (pkg && t.package !== pkg) return false;
+    if (src && t.source !== src) return false;
+    if (drf === 'today') { if (t.date !== today) return false; }
+    else if (drf === '7') {
+      const d7 = new Date(); d7.setDate(d7.getDate()-7);
+      if (t.date < toLocalDateStr(d7)) return false;
+    } else if (drf === '30') {
+      const d30 = new Date(); d30.setDate(d30.getDate()-30);
+      if (t.date < toLocalDateStr(d30)) return false;
+    } else if (drf === 'custom') {
+      const from = document.getElementById('tx-date-from').value;
+      const to   = document.getElementById('tx-date-to').value;
+      if (from && t.date < from) return false;
+      if (to   && t.date > to)   return false;
+    }
+    return true;
+  });
+
+  const total = rows.length;
+  const pages = Math.ceil(total / TX_PER_PAGE) || 1;
+  if (txPage > pages) txPage = pages;
+  const paged = rows.slice((txPage - 1) * TX_PER_PAGE, txPage * TX_PER_PAGE);
+
+  const tbody = document.getElementById('tx-tbody');
+  if (!paged.length) {
+    tbody.innerHTML = '<tr><td colspan="9" class="empty-state">No transactions found</td></tr>';
+  } else {
+    tbody.innerHTML = paged.map((t, i) => `<tr>
+      <td style="color:var(--muted);font-size:0.8rem;">${(txPage-1)*TX_PER_PAGE+i+1}</td>
+      <td style="color:var(--muted);font-size:0.82rem;">${fmtDT(t.date, t.time)}</td>
+      <td><strong>${t.name || '—'}</strong></td>
+      <td>${payerCell(t)}</td>
+      <td><span class="badge ${pkgBadge(t.package)}">${t.package || '—'}</span></td>
+      <td><span class="mpesa-code">${t.mpesa}</span></td>
+      <td class="amount-cell">${Number(t.amount).toLocaleString()}</td>
+      <td><span class="source-tag ${t.source==='daraja'?'source-auto':''}">${t.source==='daraja'?'⚡ Auto':'✎ Manual'}</span></td>
+      <td style="color:var(--muted);font-size:0.82rem;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.notes || '—'}</td>
+      <td><button class="btn-danger" onclick="deleteTx(${t.id})">Delete</button></td>
+    </tr>`).join('');
+  }
+
+  const pg = document.getElementById('tx-pagination');
+  pg.innerHTML = '';
+  for (let p = 1; p <= pages; p++) {
+    pg.innerHTML += `<button class="pg-btn ${p===txPage?'active':''}" onclick="txPage=${p};renderTransactions()">${p}</button>`;
+  }
+}
+
+function onTxDateFilterChange() {
+  const val = document.getElementById('tx-date-filter').value;
+  const cd  = document.getElementById('tx-custom-dates');
+  cd.style.display = val === 'custom' ? 'flex' : 'none';
+  txPage = 1;
+  renderTransactions();
+}
+
+function exportTxCSV() {
+  const rows = [...db.transactions].reverse();
+  if (!rows.length) { showToast('No transactions to export'); return; }
+  const headers = ['#','Date','Time','Name','Phone','Package','M-Pesa Code','Amount','Source','Notes'];
+  const lines = [headers.join(','), ...rows.map((t,i) => [
+    i+1, t.date||'', t.time||'', `"${(t.name||'').replace(/"/g,'""')}"`,
+    t.phone||'', `"${(t.package||'')}"`, t.mpesa||'', t.amount||0,
+    t.source||'', `"${(t.notes||'').replace(/"/g,'""')}"`
+  ].join(','))];
+  downloadCSV('sokastar-transactions.csv', lines.join('\n'));
+}
+
+function deleteTx(id) {
+  if (!confirm('Delete this transaction? This cannot be undone.')) return;
+  db.transactions = db.transactions.filter(t => t.id !== id);
+  saveDB(); renderTransactions(); showToast('Transaction deleted.');
+}
+
+// subscriber statistics
+function renderSubscribers() {
+  const q       = (document.getElementById('sub-search').value || '').toLowerCase();
+  const statFlt = document.getElementById('sub-status-filter').value;
+  const pkgFlt  = document.getElementById('sub-pkg-filter').value;
+  const grouped = {};
+  db.transactions.forEach(t => {
+    const key = t.phone;
+    if (!grouped[key]) grouped[key] = { phone:key, name:t.name||'', total:0, count:0, packages:new Set(), lastDate:'', pkgList:[] };
+    grouped[key].total += Number(t.amount);
+    grouped[key].count++;
+    if (t.package) { grouped[key].packages.add(t.package); grouped[key].pkgList.push(t.package); }
+    if (t.date >= grouped[key].lastDate) { grouped[key].lastDate = t.date; if (t.name) grouped[key].name = t.name; }
+  });
+  const today = toLocalDateStr(new Date());
+  let rows = Object.values(grouped).filter(s => {
+    if (q && !s.phone.includes(q) && !(s.name||'').toLowerCase().includes(q)) return false;
+    if (pkgFlt && !s.pkgList.includes(pkgFlt)) return false;
+    if (statFlt) {
+      const days = Math.floor((new Date(today) - new Date(s.lastDate)) / 86400000);
+      if (statFlt === 'active'   && days !== 0) return false;
+      if (statFlt === 'recent'   && (days === 0 || days > 3)) return false;
+      if (statFlt === 'inactive' && days <= 3) return false;
+    }
+    return true;
+  }).sort((a,b) => b.total - a.total);
+
+  const tbody = document.getElementById('sub-tbody');
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No subscribers found</td></tr>'; return; }
+  tbody.innerHTML = rows.map(s => {
+    const days   = Math.floor((new Date(today) - new Date(s.lastDate)) / 86400000);
+    const status = days === 0 ? '<span class="badge badge-green">Active Today</span>' :
+                   days <= 3  ? '<span class="badge badge-blue">Recent</span>' :
+                                '<span class="badge badge-red">Inactive</span>';
+    return `<tr>
+      <td><strong>${subscriberLabel(s)}</strong></td>
+      <td class="amount-cell">${s.total.toLocaleString()}</td>
+      <td style="color:var(--muted);">${s.count}</td>
+      <td style="font-size:0.82rem;color:var(--muted);">${[...s.packages].join(', ') || '—'}</td>
+      <td style="color:var(--muted);font-size:0.82rem;">${s.lastDate || '—'}</td>
+      <td>${status}</td>
+    </tr>`;
+  }).join('');
+}
+
+function exportSubCSV() {
+  const grouped = {};
+  db.transactions.forEach(t => {
+    if (!grouped[t.phone]) grouped[t.phone] = { phone:t.phone, name:t.name||'', total:0, count:0, packages:new Set(), lastDate:'' };
+    grouped[t.phone].total += Number(t.amount);
+    grouped[t.phone].count++;
+    if (t.package) grouped[t.phone].packages.add(t.package);
+    if (t.date >= grouped[t.phone].lastDate) { grouped[t.phone].lastDate = t.date; if (t.name) grouped[t.phone].name = t.name; }
+  });
+  const rows = Object.values(grouped).sort((a,b)=>b.total-a.total);
+  if (!rows.length) { showToast('No subscribers to export'); return; }
+  const headers = ['Phone','Name','Total Paid (KES)','Transactions','Packages','Last Payment'];
+  const lines = [headers.join(','), ...rows.map(s => [
+    s.phone, `"${(s.name||'').replace(/"/g,'""')}"`,
+    s.total, s.count, `"${[...s.packages].join('; ')}"`, s.lastDate||''
+  ].join(','))];
+  downloadCSV('sokastar-subscribers.csv', lines.join('\n'));
+}
+
+function downloadCSV(filename, csv) {
+  const blob = new Blob([csv], { type: 'text/csv' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV downloaded!');
+}
+
+// webhook sync operations
+function renderWebhookPage() {
+  const cfg = webhookCfg;
+  document.getElementById('wh-server-url').value = cfg.serverUrl || '';
+  document.getElementById('wh-api-key').value    = cfg.apiKey    || '';
+  document.getElementById('wh-interval').value   = String(cfg.interval ?? 30);
+
+  const base = cfg.serverUrl
+    ? cfg.serverUrl.replace(/\/$/, '')
+    : window.location.origin;
+  document.getElementById('wh-confirm-url').textContent  = base + '/webhook/c2b/confirm';
+  document.getElementById('wh-validate-url').textContent = base + '/webhook/c2b/validate';
+  
+  const warmUrlDisplay = document.getElementById('warm-url-display');
+  if (warmUrlDisplay) {
+    warmUrlDisplay.textContent = base + '/health';
+  }
+
+  const autoCount = db.transactions.filter(t => t.source === 'daraja').length;
+  document.getElementById('wh-auto-count').textContent = autoCount;
+
+  updateWebhookStatusUI(cfg.serverUrl ? 'configured' : 'unconfigured');
+  renderLog();
+}
+
+async function registerDarajaUrls() {
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl || !apiKey) {
+    showToast('Configure your server URL and API key first (click ⚡ icon 5 times)');
+    return;
+  }
+  const btn = document.getElementById('btn-register-urls');
+  const result = document.getElementById('register-result');
+  btn.disabled = true;
+  btn.textContent = '⏳ Registering…';
+  result.style.display = 'none';
+
+  try {
+    const res = await fetch(serverUrl.replace(/\/$/, '') + '/api/register-urls', {
+      method: 'POST',
+      headers: { 'X-Api-Key': apiKey, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ callbackBase: serverUrl.replace(/\/$/, '') }),
+    });
+    const data = await res.json();
+    if (res.ok && data.status === 'ok') {
+      result.style.display = 'block';
+      result.style.background = 'rgba(0,200,83,0.1)';
+      result.style.border = '1px solid rgba(0,200,83,0.3)';
+      result.style.color = 'var(--green)';
+      result.innerHTML = '✅ URLs registered successfully with Safaricom!<br><span style="font-size:0.78rem;color:var(--muted);">Confirmation: ' + (data.confirmationUrl || '') + '<br>Validation: ' + (data.validationUrl || '') + '</span>';
+      addLog('ok', 'C2B URLs registered with Safaricom successfully');
+      showToast('✅ URLs registered with Safaricom!');
+    } else {
+      result.style.display = 'block';
+      result.style.background = 'rgba(255,68,68,0.1)';
+      result.style.border = '1px solid rgba(255,68,68,0.3)';
+      result.style.color = 'var(--red)';
+      result.textContent = '❌ Registration failed: ' + (data.error || JSON.stringify(data));
+      addLog('err', 'URL registration failed: ' + (data.error || 'Unknown error'));
+    }
+  } catch (err) {
+    result.style.display = 'block';
+    result.style.background = 'rgba(255,68,68,0.1)';
+    result.style.border = '1px solid rgba(255,68,68,0.3)';
+    result.style.color = 'var(--red)';
+    result.textContent = '❌ Network error: ' + err.message;
+    addLog('err', 'URL registration error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔗 Register URLs with Safaricom';
+  }
+}
+
+function saveWebhookConfig() {
+  const url      = document.getElementById('wh-server-url').value.trim();
+  const key      = document.getElementById('wh-api-key').value.trim();
+  const interval = parseInt(document.getElementById('wh-interval').value, 10);
+
+  if (url && !url.startsWith('http')) {
+    showToast('Please enter a valid URL starting with https://'); return;
+  }
+  webhookCfg = { serverUrl: url, apiKey: key, interval };
+  saveWebhookCfg();
+  renderWebhookPage();
+  stopSync(); startSync();
+  showToast('Webhook config saved!');
+}
+
+function updateWebhookStatusUI(state) {
+  const icon  = document.getElementById('wh-icon');
+  const title = document.getElementById('wh-status-title');
+  const sub   = document.getElementById('wh-status-sub');
+  if (state === 'configured') {
+    icon.className  = 'wh-status-icon connected';
+    icon.textContent = '⚡';
+    title.textContent = 'Configured';
+    sub.textContent   = 'Auto-syncing transactions from Safaricom Daraja';
+  } else if (state === 'syncing') {
+    icon.textContent = '⟳';
+    title.textContent = 'Syncing…';
+  } else if (state === 'error') {
+    icon.className  = 'wh-status-icon disconnected';
+    icon.textContent = '✕';
+    title.textContent = 'Connection Error';
+    sub.textContent   = 'Check your server URL and API key';
+  } else {
+    icon.className  = 'wh-status-icon disconnected';
+    icon.textContent = '—';
+    title.textContent = 'Not Configured';
+    sub.textContent   = 'Enter your webhook server URL below to enable auto-sync';
+  }
+}
+
+function setSyncIndicator(state, label) {
+  const dot = document.getElementById('sync-dot');
+  const lbl = document.getElementById('sync-label');
+  const ind = document.getElementById('sync-indicator');
+  ind.style.display = 'flex';
+  dot.className = 'sync-dot ' + state;
+  lbl.textContent = label;
+}
+
+async function syncFromServer() {
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl) return;
+
+  setSyncIndicator('syncing', 'Syncing…');
+  try {
+    const headers = {};
+    if (apiKey) headers['X-Api-Key'] = apiKey;
+    
+    const res = await fetch(serverUrl.replace(/\/$/, '') + '/api/transactions', {
+      headers: headers
+    });
+
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+
+    const data = await res.json();
+    const serverTxns = (data.transactions || []).map(st => ({ ...st, source: st.source || 'daraja' }));
+
+    // Server (Supabase) is the source of truth. Replace all server-backed
+    // transactions with the latest list — so deletions on the server disappear
+    // here too — while keeping any browser-only manual entries.
+    const serverCodes = new Set(serverTxns.map(t => t.mpesa));
+    const localManual = db.transactions.filter(t => t.source === 'manual' && !serverCodes.has(t.mpesa));
+    const prevCodes   = new Set(db.transactions.map(t => t.mpesa));
+    const next        = [...serverTxns, ...localManual];
+    const nextCodes   = new Set(next.map(t => t.mpesa));
+
+    // Only touch the DOM when the data actually changed, so fast (5s) polling
+    // doesn't rebuild the charts every tick.
+    const newCount = [...nextCodes].filter(c => !prevCodes.has(c)).length;
+    const changed  = newCount > 0 || [...prevCodes].some(c => !nextCodes.has(c));
+    db.transactions = next;
+    if (changed) {
+      saveDB();
+      refreshDashboard();
+    }
+    if (newCount > 0) {
+      addLog('ok', `Synced ${newCount} new transaction${newCount > 1 ? 's' : ''} from Safaricom Daraja`);
+      showToast(`⚡ ${newCount} new transaction${newCount > 1 ? 's' : ''} received!`);
+    }
+
+    const now = new Date().toLocaleTimeString('en-KE', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+    document.getElementById('wh-last-sync').textContent   = now;
+    document.getElementById('wh-server-status').textContent = '✓ Online';
+    document.getElementById('wh-server-status').style.color = 'var(--green)';
+    document.getElementById('wh-auto-count').textContent   = db.transactions.filter(t => t.source === 'daraja').length;
+
+    setSyncIndicator('synced', 'Synced');
+    updateWebhookStatusUI('configured');
+  } catch (err) {
+    console.error('Sync error:', err);
+    setSyncIndicator('error', 'Sync Failed');
+    updateWebhookStatusUI('error');
+    document.getElementById('wh-server-status').textContent = '✕ Offline';
+    document.getElementById('wh-server-status').style.color = 'var(--red)';
+    addLog('err', 'Sync failed: ' + err.message);
+  }
+}
+
+function startSync() {
+  stopSync();
+  const interval = webhookCfg.interval;
+  if (!webhookCfg.serverUrl || !webhookCfg.apiKey || !interval) return;
+  syncFromServer(); // immediate first sync
+  syncTimer = setInterval(syncFromServer, interval * 1000);
+}
+
+function stopSync() {
+  if (syncTimer) { clearInterval(syncTimer); syncTimer = null; }
+  document.getElementById('sync-indicator').style.display = 'none';
+}
+
+function manualSync() {
+  syncFromServer();
+  showToast('Syncing now…');
+}
+
+// logging helper functions
+function addLog(type, msg) {
+  const time = new Date().toLocaleTimeString('en-KE', { hour:'2-digit', minute:'2-digit', second:'2-digit' });
+  syncLog.unshift({ type, msg, time });
+  if (syncLog.length > 100) syncLog.pop();
+  saveLog();
+  renderLog();
+}
+
+function renderLog() {
+  const el = document.getElementById('wh-log');
+  if (!el) return;
+  if (!syncLog.length) { el.innerHTML = '<div class="empty-log">No sync activity yet</div>'; return; }
+  el.innerHTML = syncLog.slice(0, 30).map(l => `
+    <div class="log-entry">
+      <div class="log-dot ${l.type}"></div>
+      <div class="log-time">${l.time}</div>
+      <div class="log-msg">${l.msg}</div>
+    </div>`).join('');
+}
+
+function clearLog() {
+  syncLog = []; saveLog(); renderLog();
+}
+
+function copyUrl(elementId) {
+  const url = document.getElementById(elementId).textContent;
+  navigator.clipboard.writeText(url).then(() => showToast('URL copied!')).catch(() => {
+    prompt('Copy this URL:', url);
+  });
+}
+
+// SMS Manager functions
+async function loadSmsStatus() {
+  const el = document.getElementById('sms-global-status');
+  if (!el) return;
+
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl || !apiKey) {
+    el.className = 'badge badge-muted';
+    el.textContent = 'Server Unconfigured';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${serverUrl.replace(/\/$/, '')}/api/sms/status`, {
+      headers: { 'X-Api-Key': apiKey }
+    });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.enabled) {
+      el.className = 'badge badge-green';
+      el.textContent = `Active (Sender: ${data.senderId || 'Default'})`;
+    } else {
+      el.className = 'badge badge-red';
+      el.textContent = 'SMS Disabled';
+    }
+  } catch (e) {
+    el.className = 'badge badge-red';
+    el.textContent = 'Offline/Error';
+  }
+}
+
+function updateSmsCharCount() {
+  const msg = document.getElementById('sms-message').value;
+  const len = msg.length;
+  const el  = document.getElementById('sms-char-count');
+  el.textContent = `${len} / 160`;
+  el.className = 'sms-counter' + (len > 160 ? ' over' : len > 130 ? ' warn' : '');
+}
+
+async function updateSmsEstimate() {
+  const pkg  = document.getElementById('sms-pkg').value;
+  const days = document.getElementById('sms-days').value;
+  const el   = document.getElementById('sms-estimate');
+  el.textContent = '…';
+
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl || !apiKey) {
+    // Estimate locally from cached transactions
+    const today = toLocalDateStr(new Date());
+    const seen = new Set();
+    db.transactions.forEach(t => {
+      if (pkg !== 'All' && t.package !== pkg) return;
+      if (parseInt(days) > 0) {
+        const d = new Date(today); d.setDate(d.getDate() - parseInt(days));
+        if (t.date < toLocalDateStr(d)) return;
+      }
+      if (t.phone && t.phone.length >= 9 && !/^[a-f0-9]{32,}$/i.test(t.phone)) seen.add(t.phone);
+    });
+    el.textContent = seen.size;
+    return;
+  }
+
+  try {
+    const url = `${serverUrl.replace(/\/$/, '')}/api/sms/estimate?package=${encodeURIComponent(pkg)}&activeDays=${days}`;
+    const res = await fetch(url, { headers: { 'X-Api-Key': apiKey } });
+    const data = await res.json();
+    el.textContent = data.count ?? '?';
+  } catch(e) {
+    el.textContent = '?';
+  }
+}
+
+async function sendBulkSMS() {
+  const msg  = document.getElementById('sms-message').value.trim();
+  const pkg  = document.getElementById('sms-pkg').value;
+  const days = document.getElementById('sms-days').value;
+  const btn  = document.getElementById('sms-send-btn');
+  const res  = document.getElementById('sms-send-result');
+
+  if (!msg) { showToast('Please type a message first'); return; }
+
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl || !apiKey) {
+    showToast('Server URL & API key not configured (see Daraja API settings)');
+    return;
+  }
+
+  if (!confirm(`Send "${msg.slice(0,60)}..." to recipients? This will use your Africa's Talking SMS credits.`)) return;
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending…';
+  res.style.display = 'none';
+
+  try {
+    const r = await fetch(`${serverUrl.replace(/\/$/, '')}/api/sms/send-bulk`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey },
+      body: JSON.stringify({ message: msg, package: pkg, activeDays: parseInt(days) })
+    });
+    const data = await r.json();
+    res.style.display = 'block';
+    if (r.ok && data.status === 'ok') {
+      res.style.cssText = 'display:block;padding:12px 16px;border-radius:7px;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--green);font-size:0.9rem;margin-top:14px;';
+      res.innerHTML = `✅ Campaign sent!<br><span style="color:var(--muted);font-size:0.82rem;">Sent: ${data.sent} | Failed: ${data.failed} | Total: ${data.totalRecipients}</span>`;
+      showToast(`✅ ${data.sent} messages sent!`);
+      document.getElementById('sms-message').value = '';
+      updateSmsCharCount();
+      loadCampaigns();
+    } else {
+      res.style.cssText = 'display:block;padding:12px 16px;border-radius:7px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--red);font-size:0.9rem;margin-top:14px;';
+      res.textContent = '❌ ' + (data.error || 'Send failed');
+    }
+  } catch(e) {
+    res.style.cssText = 'display:block;padding:12px 16px;border-radius:7px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--red);font-size:0.9rem;margin-top:14px;';
+    res.textContent = '❌ Network error: ' + e.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✉ Send Campaign';
+  }
+}
+
+async function loadCampaigns() {
+  const el = document.getElementById('campaigns-list');
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl || !apiKey) {
+    el.innerHTML = '<div class="empty-log">Configure server URL & API key in Daraja API settings to load campaign history.</div>';
+    return;
+  }
+  try {
+    const res  = await fetch(`${serverUrl.replace(/\/$/, '')}/api/sms/campaigns`, { headers: { 'X-Api-Key': apiKey } });
+    const data = await res.json();
+    const cams = data.campaigns || [];
+    if (!cams.length) { el.innerHTML = '<div class="empty-log">No campaigns sent yet.</div>'; return; }
+    el.innerHTML = cams.map(c => `
+      <div class="campaign-row">
+        <div style="flex:1;">
+          <div style="margin-bottom:4px;"><span class="campaign-pkg">${c.package_name || 'All'}</span></div>
+          <div class="campaign-msg">${c.message}</div>
+          <div class="campaign-stats">
+            <span class="campaign-stat-sent">✓ ${c.sent_count ?? c.recipients_count} sent</span>
+            ${c.failed_count ? `<span class="campaign-stat-failed">✕ ${c.failed_count} failed</span>` : ''}
+            <span style="color:var(--muted);">Total: ${c.recipients_count}</span>
+          </div>
+        </div>
+        <div class="campaign-time">${c.created_at ? new Date(c.created_at).toLocaleString('en-KE',{dateStyle:'short',timeStyle:'short'}) : '—'}</div>
+      </div>`).join('');
+  } catch(e) {
+    el.innerHTML = `<div class="empty-log">Error loading campaigns: ${e.message}</div>`;
+  }
+}
+
+async function loadSmsLogs() {
+  const el = document.getElementById('sms-logs-list');
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl || !apiKey) { el.innerHTML = '<div class="empty-log">Configure server to load SMS logs.</div>'; return; }
+  try {
+    const res  = await fetch(`${serverUrl.replace(/\/$/, '')}/api/sms/logs`, { headers: { 'X-Api-Key': apiKey } });
+    const data = await res.json();
+    const logs = data.logs || [];
+    if (!logs.length) { el.innerHTML = '<div class="empty-log">No SMS delivery logs yet.</div>'; return; }
+    el.innerHTML = `<table style="width:100%;border-collapse:collapse;">
+      <thead><tr>
+        <th style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;background:var(--dark3);">Time</th>
+        <th style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;background:var(--dark3);">Phone</th>
+        <th style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;background:var(--dark3);">Message</th>
+        <th style="font-family:'Barlow Condensed',sans-serif;font-size:0.68rem;letter-spacing:2px;text-transform:uppercase;color:var(--muted);padding:10px 14px;text-align:left;background:var(--dark3);">Status</th>
+      </tr></thead>
+      <tbody>${logs.map(l => `<tr style="border-bottom:1px solid var(--border2);">
+        <td style="padding:10px 14px;font-family:monospace;font-size:0.78rem;color:var(--muted);white-space:nowrap;">${l.created_at ? new Date(l.created_at).toLocaleString('en-KE',{dateStyle:'short',timeStyle:'short'}) : '—'}</td>
+        <td style="padding:10px 14px;font-family:monospace;font-size:0.82rem;">${l.phone||'—'}</td>
+        <td style="padding:10px 14px;font-size:0.85rem;color:var(--muted);max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${(l.message||'').replace(/"/g,'&quot;')}">${l.message||'—'}</td>
+        <td style="padding:10px 14px;"><span class="badge ${l.status==='sent'?'badge-green':l.status==='skipped'?'badge-gold':'badge-red'}">${l.status||'—'}</span>${l.error?`<div style="font-size:0.72rem;color:var(--red);margin-top:3px;">${l.error}</div>`:''}</td>
+      </tr>`).join('')}</tbody>
+    </table>`;
+  } catch(e) {
+    el.innerHTML = `<div class="empty-log">Error loading logs: ${e.message}</div>`;
+  }
+}
+
+// utility helpers
+function toLocalDateStr(date) {
+  const tzOffset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - tzOffset).toISOString().split('T')[0];
+}
+
+function fmtDT(date, time) {
+  if (!date) return '—';
+  try {
+    const d = new Date(date + 'T' + (time || '00:00'));
+    return d.toLocaleDateString('en-KE', { day:'numeric', month:'short', year:'numeric' }) + ' ' + (time || '');
+  } catch(e) { return date; }
+}
+
+function pkgBadge(pkg) {
+  return { Daily:'badge-green', 'Super MultiBet':'badge-blue', 'MidWeek Jackpot':'badge-gold', 'Mega Jackpot':'badge-gold', 'Half Time Full Time':'badge-red' }[pkg] || 'badge-muted';
+}
+
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// boot database & init admin
+loadDB();
+loadWebhookCfg();
+loadLog();
+initAdmin();
+</script>
+</body>
+</html>

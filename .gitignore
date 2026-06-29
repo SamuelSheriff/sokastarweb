@@ -1,0 +1,4 @@
+node_modules
+transactions.json
+.env
+.DS_Store
