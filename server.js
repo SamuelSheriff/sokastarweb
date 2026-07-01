@@ -884,11 +884,19 @@ app.post('/api/sms/send-bulk', async (req, res) => {
       query = query.eq('package', pkg);
     }
 
-    // Filter by recency (activeDays: 0 = all time)
-    if (activeDays && parseInt(activeDays, 10) > 0) {
-      const since = new Date();
+    // Get Kenya local today date (UTC+3)
+    const nowKE = new Date(Date.now() + 3 * 60 * 60 * 1000);
+    const todayKE = nowKE.toISOString().split('T')[0];
+
+    // Filter by recency
+    if (activeDays === 'today') {
+      // Exact match for today (Kenya date)
+      query = query.eq('date', todayKE);
+    } else if (activeDays && parseInt(activeDays, 10) > 0) {
+      const since = new Date(Date.now() + 3 * 60 * 60 * 1000);
       since.setDate(since.getDate() - parseInt(activeDays, 10));
-      query = query.gte('date', since.toISOString().split('T')[0]);
+      const sinceDate = since.toISOString().split('T')[0];
+      query = query.gte('date', sinceDate);
     }
 
     const { data: txns, error: fetchErr } = await query;
@@ -993,8 +1001,15 @@ app.get('/api/sms/estimate', async (req, res) => {
   const { package: pkg, activeDays } = req.query;
   let query = supabase.from('transactions').select('phone, date').not('phone', 'is', null);
   if (pkg && pkg !== 'All') query = query.eq('package', pkg);
-  if (activeDays && parseInt(activeDays, 10) > 0) {
-    const since = new Date();
+
+  // Get Kenya local today date (UTC+3)
+  const nowKE = new Date(Date.now() + 3 * 60 * 60 * 1000);
+  const todayKE = nowKE.toISOString().split('T')[0];
+
+  if (activeDays === 'today') {
+    query = query.eq('date', todayKE);
+  } else if (activeDays && parseInt(activeDays, 10) > 0) {
+    const since = new Date(Date.now() + 3 * 60 * 60 * 1000);
     since.setDate(since.getDate() - parseInt(activeDays, 10));
     query = query.gte('date', since.toISOString().split('T')[0]);
   }
