@@ -808,7 +808,7 @@ const PKG_MAP = [
 // application state
 let db = { transactions: [] };
 let revenueChart = null, packageChart = null, subStatusChart = null, hourlyChart = null;
-let txPage = 1; const TX_PER_PAGE = 50;
+let txPage = 1; const TX_PER_PAGE = 100;
 let chartDays = 7;
 let syncTimer  = null;
 let webhookCfg = { serverUrl: window.location.origin, apiKey: '', interval: 30 };
@@ -1430,6 +1430,12 @@ async function syncFromServer() {
     if (changed) {
       saveDB();
       refreshDashboard();
+      if (document.getElementById('page-transactions').classList.contains('active')) {
+        renderTransactions();
+      }
+      if (document.getElementById('page-subscribers').classList.contains('active')) {
+        renderSubscribers();
+      }
     }
     if (newCount > 0) {
       addLog('ok', `Synced ${newCount} new transaction${newCount > 1 ? 's' : ''} from Safaricom Daraja`);
@@ -1457,7 +1463,9 @@ async function syncFromServer() {
 function startSync() {
   stopSync();
   const interval = webhookCfg.interval;
-  if (!webhookCfg.serverUrl || !webhookCfg.apiKey || !interval) return;
+  // apiKey is optional — syncFromServer attaches it only when present.
+  // We only require a serverUrl and a non-zero interval to begin polling.
+  if (!webhookCfg.serverUrl || !interval) return;
   syncFromServer(); // immediate first sync
   syncTimer = setInterval(syncFromServer, interval * 1000);
 }
