@@ -228,6 +228,103 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
 .analytics-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:28px;}
 .metric-card-wide{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px 22px;}
 .metric-card-wide:hover{border-color:var(--green);}
+
+/* Table scrollability */
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* RESPONSIVE LAYOUT */
+.menu-toggle {
+  display: none;
+}
+.sidebar-backdrop {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .admin-layout {
+    position: relative;
+    overflow-x: hidden;
+  }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: var(--sidebar-w);
+    transform: translateX(-100%);
+    transition: transform 0.3s ease;
+    z-index: 999;
+  }
+  .sidebar.open {
+    transform: translateX(0);
+  }
+  .sidebar-backdrop {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.65);
+    z-index: 998;
+    backdrop-filter: blur(2px);
+  }
+  .sidebar-backdrop.show {
+    display: block;
+  }
+  .topbar {
+    padding: 16px 20px;
+  }
+  .menu-toggle {
+    display: block;
+    background: transparent;
+    border: none;
+    color: var(--white);
+    font-size: 1.5rem;
+    cursor: pointer;
+    line-height: 1;
+    padding: 4px 8px;
+    margin-right: 4px;
+  }
+  .metrics-grid {
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px;
+  }
+  .analytics-grid, .form-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  /* Select grids in other sections */
+  #page-sms div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+    gap: 20px;
+  }
+  #page-webhook div[style*="grid-template-columns"] {
+    grid-template-columns: 1fr !important;
+  }
+  .wh-info-grid {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .page-content {
+    padding: 16px;
+  }
+  
+  .pagination {
+    justify-content: center !important;
+    padding: 12px 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .metrics-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -236,6 +333,9 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
 
 <!-- ADMIN -->
 <div id="admin-screen">
+  <!-- SIDEBAR BACKDROP -->
+  <div class="sidebar-backdrop" id="sidebar-backdrop" onclick="toggleSidebar()"></div>
+
   <div class="admin-layout">
 
     <!-- SIDEBAR -->
@@ -275,7 +375,10 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
     <!-- MAIN -->
     <div class="main-content">
       <div class="topbar">
-        <div class="topbar-title" id="topbar-title">Dashboard</div>
+        <div class="topbar-left" style="display:flex;align-items:center;gap:12px;">
+          <button class="menu-toggle" id="menu-toggle" onclick="toggleSidebar()">☰</button>
+          <div class="topbar-title" id="topbar-title">Dashboard</div>
+        </div>
         <div class="topbar-right">
           <div class="sync-indicator" id="sync-indicator" style="display:none;">
             <div class="sync-dot" id="sync-dot"></div>
@@ -364,10 +467,12 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
           <div class="table-card-header">
             <div class="table-card-title">Recent Transactions</div>
           </div>
-          <table>
-            <thead><tr><th>Date / Time</th><th>Name</th><th>Phone</th><th>Package</th><th>M-Pesa Code</th><th>Amount</th><th>Source</th></tr></thead>
-            <tbody id="dash-recent-tbody"><tr><td colspan="7" class="empty-state">No transactions yet</td></tr></tbody>
-          </table>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Date / Time</th><th>Name</th><th>Phone</th><th>Package</th><th>M-Pesa Code</th><th>Amount</th><th>Source</th></tr></thead>
+              <tbody id="dash-recent-tbody"><tr><td colspan="7" class="empty-state">No transactions yet</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -461,10 +566,12 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
               <input type="date" class="filter-date" id="tx-date-to" onchange="txPage=1;renderTransactions()">
             </span>
           </div>
-          <table>
-            <thead><tr><th>#</th><th>Date / Time</th><th>Name</th><th>Phone</th><th>Package</th><th>M-Pesa Code</th><th>Amount (KES)</th><th>Source</th><th>Notes</th><th>Action</th></tr></thead>
-            <tbody id="tx-tbody"><tr><td colspan="10" class="empty-state">No transactions recorded yet</td></tr></tbody>
-          </table>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>#</th><th>Date / Time</th><th>Name</th><th>Phone</th><th>Package</th><th>M-Pesa Code</th><th>Amount (KES)</th><th>Source</th><th>Notes</th><th>Action</th></tr></thead>
+              <tbody id="tx-tbody"><tr><td colspan="10" class="empty-state">No transactions recorded yet</td></tr></tbody>
+            </table>
+          </div>
           <div class="pagination" id="tx-pagination"></div>
         </div>
       </div>
@@ -497,10 +604,12 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
               <option value="Half Time Full Time">Half Time Full Time</option>
             </select>
           </div>
-          <table>
-            <thead><tr><th>Phone Number</th><th>Total Paid (KES)</th><th>Transactions</th><th>Packages Used</th><th>Last Payment</th><th>Status</th><th>Action</th></tr></thead>
-            <tbody id="sub-tbody"><tr><td colspan="7" class="empty-state">No subscribers yet</td></tr></tbody>
-          </table>
+          <div class="table-responsive">
+            <table>
+              <thead><tr><th>Phone Number</th><th>Total Paid (KES)</th><th>Transactions</th><th>Packages Used</th><th>Last Payment</th><th>Status</th><th>Action</th></tr></thead>
+              <tbody id="sub-tbody"><tr><td colspan="7" class="empty-state">No subscribers yet</td></tr></tbody>
+            </table>
+          </div>
         </div>
       </div>
 
@@ -894,6 +1003,29 @@ function showPage(name, btn) {
   if (name === 'subscribers')     renderSubscribers();
   if (name === 'webhook')         renderWebhookPage();
   if (name === 'sms')             { loadSmsStatus(); loadCampaigns(); loadSmsLogs(); updateSmsEstimate(); }
+  
+  // Close responsive sidebar on mobile after selecting a page
+  closeSidebar();
+}
+
+function toggleSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  const isOpen = sidebar.classList.contains('open');
+  if (isOpen) {
+    sidebar.classList.remove('open');
+    backdrop.classList.remove('show');
+  } else {
+    sidebar.classList.add('open');
+    backdrop.classList.add('show');
+  }
+}
+
+function closeSidebar() {
+  const sidebar = document.querySelector('.sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('open');
+  if (backdrop) backdrop.classList.remove('show');
 }
 
 function initAdmin() {
