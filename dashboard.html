@@ -258,7 +258,7 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
         <button class="nav-item" onclick="showPage('subscribers',this)">
           <span class="nav-icon">◎</span><span>Subscribers</span>
         </button>
-        <button class="nav-item" onclick="showPage('sms',this)">
+        <button class="nav-item" id="nav-sms" onclick="showPage('sms',this)">
           <span class="nav-icon">✉</span><span>SMS Manager</span>
         </button>
         <button class="nav-item" id="nav-webhook" onclick="showPage('webhook',this)" style="display:none;">
@@ -498,8 +498,8 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
             </select>
           </div>
           <table>
-            <thead><tr><th>Phone Number</th><th>Total Paid (KES)</th><th>Transactions</th><th>Packages Used</th><th>Last Payment</th><th>Status</th></tr></thead>
-            <tbody id="sub-tbody"><tr><td colspan="6" class="empty-state">No subscribers yet</td></tr></tbody>
+            <thead><tr><th>Phone Number</th><th>Total Paid (KES)</th><th>Transactions</th><th>Packages Used</th><th>Last Payment</th><th>Status</th><th>Action</th></tr></thead>
+            <tbody id="sub-tbody"><tr><td colspan="7" class="empty-state">No subscribers yet</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -564,6 +564,34 @@ tbody td{padding:13px 18px;font-size:0.9rem;color:var(--text);}
               </div>
               <button class="sms-send-btn" id="sms-send-btn" onclick="sendBulkSMS()">✉ Send Campaign</button>
               <div id="sms-send-result" style="margin-top:14px;display:none;"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Direct SMS Composer -->
+        <div class="chart-card">
+          <div class="chart-card-header">
+            <div class="chart-card-title">✉ Send Direct SMS</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+            <div>
+              <div class="form-group">
+                <label class="form-label">Phone Number / Recipient *</label>
+                <input type="tel" class="form-input" id="direct-sms-phone" placeholder="e.g. 0722 000 000 or +254722...">
+                <div style="font-size:0.78rem;color:var(--muted);margin-top:6px;">Supports local formats (07xx, 01xx) or international (+254...)</div>
+              </div>
+            </div>
+            <div>
+              <div class="form-group">
+                <div class="sms-template-header">
+                  <label class="form-label" style="margin-bottom:0;">Message</label>
+                  <span class="sms-counter" id="direct-sms-char-count">0 / 160</span>
+                </div>
+                <textarea class="form-input" id="direct-sms-message" rows="3" style="resize:vertical;min-height:90px;font-size:0.9rem;line-height:1.5;"
+                  placeholder="Type message here..." oninput="updateDirectSmsCharCount()"></textarea>
+              </div>
+              <button class="sms-send-btn" id="direct-sms-send-btn" onclick="sendDirectSMS()" style="background:var(--blue);">✉ Send Message</button>
+              <div id="direct-sms-result" style="margin-top:14px;display:none;"></div>
             </div>
           </div>
         </div>
@@ -1163,7 +1191,12 @@ function renderTransactions() {
       <td class="amount-cell">${Number(t.amount).toLocaleString()}</td>
       <td><span class="source-tag ${t.source==='daraja'?'source-auto':''}">${t.source==='daraja'?'⚡ Auto':'✎ Manual'}</span></td>
       <td style="color:var(--muted);font-size:0.82rem;max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t.notes || '—'}</td>
-      <td><button class="btn-danger" onclick="deleteTx(${t.id})">Delete</button></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-secondary" style="padding:4px 8px;font-size:0.75rem;" onclick="quickSms('${t.phone}')">✉ SMS</button>
+          <button class="btn-danger" style="padding:4px 8px;font-size:0.75rem;" onclick="deleteTx(${t.id})">Delete</button>
+        </div>
+      </td>
     </tr>`).join('');
   }
 
@@ -1228,7 +1261,7 @@ function renderSubscribers() {
   }).sort((a,b) => b.total - a.total);
 
   const tbody = document.getElementById('sub-tbody');
-  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" class="empty-state">No subscribers found</td></tr>'; return; }
+  if (!rows.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No subscribers found</td></tr>'; return; }
   tbody.innerHTML = rows.map(s => {
     const days   = Math.floor((new Date(today) - new Date(s.lastDate)) / 86400000);
     const status = days === 0 ? '<span class="badge badge-green">Active Today</span>' :
@@ -1241,6 +1274,7 @@ function renderSubscribers() {
       <td style="font-size:0.82rem;color:var(--muted);">${[...s.packages].join(', ') || '—'}</td>
       <td style="color:var(--muted);font-size:0.82rem;">${s.lastDate || '—'}</td>
       <td>${status}</td>
+      <td><button class="btn-secondary" style="padding:4px 8px;font-size:0.75rem;" onclick="quickSms('${s.phone}')">✉ SMS</button></td>
     </tr>`;
   }).join('');
 }
@@ -1582,6 +1616,76 @@ async function updateSmsEstimate() {
   } catch(e) {
     el.textContent = '?';
   }
+}
+
+function updateDirectSmsCharCount() {
+  const msg = document.getElementById('direct-sms-message').value;
+  const len = msg.length;
+  const el  = document.getElementById('direct-sms-char-count');
+  el.textContent = `${len} / 160`;
+  el.className = 'sms-counter' + (len > 160 ? ' over' : len > 130 ? ' warn' : '');
+}
+
+async function sendDirectSMS() {
+  const phone = document.getElementById('direct-sms-phone').value.trim();
+  const message = document.getElementById('direct-sms-message').value.trim();
+  const btn = document.getElementById('direct-sms-send-btn');
+  const resDiv = document.getElementById('direct-sms-result');
+
+  if (!phone) { showToast('Please enter a phone number'); return; }
+  if (!message) { showToast('Please type a message first'); return; }
+
+  const { serverUrl, apiKey } = webhookCfg;
+  if (!serverUrl) {
+    showToast('Server URL not configured (see Daraja API settings)');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = '⏳ Sending…';
+  resDiv.style.display = 'none';
+
+  try {
+    const r = await fetch(`${serverUrl.replace(/\/$/, '')}/api/sms/send-single`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Api-Key': apiKey
+      },
+      body: JSON.stringify({ phone, message })
+    });
+
+    const data = await r.json();
+    resDiv.style.display = 'block';
+    if (r.ok && data.status === 'sent') {
+      resDiv.style.cssText = 'display:block;padding:12px 16px;border-radius:7px;background:rgba(0,200,83,0.1);border:1px solid rgba(0,200,83,0.3);color:var(--green);font-size:0.9rem;margin-top:14px;';
+      resDiv.innerHTML = `✅ Message sent successfully! Status: ${data.status}`;
+      showToast('SMS sent successfully!');
+      document.getElementById('direct-sms-message').value = '';
+      updateDirectSmsCharCount();
+      loadSmsLogs();
+    } else {
+      resDiv.style.cssText = 'display:block;padding:12px 16px;border-radius:7px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--red);font-size:0.9rem;margin-top:14px;';
+      resDiv.textContent = `❌ Failed to send: ${data.error || JSON.stringify(data)}`;
+      showToast('Failed to send SMS');
+    }
+  } catch (err) {
+    resDiv.style.cssText = 'display:block;padding:12px 16px;border-radius:7px;background:rgba(255,68,68,0.1);border:1px solid rgba(255,68,68,0.3);color:var(--red);font-size:0.9rem;margin-top:14px;';
+    resDiv.textContent = `❌ Error: ${err.message}`;
+    showToast('Network error sending SMS');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✉ Send Message';
+  }
+}
+
+function quickSms(phone) {
+  document.getElementById('direct-sms-phone').value = phone;
+  updateDirectSmsCharCount();
+  showPage('sms', document.getElementById('nav-sms'));
+  setTimeout(() => {
+    document.getElementById('direct-sms-message').focus();
+  }, 100);
 }
 
 async function sendBulkSMS() {

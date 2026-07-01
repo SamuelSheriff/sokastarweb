@@ -829,6 +829,26 @@ app.post('/api/sms/test', async (req, res) => {
 });
 
 /**
+ * POST /api/sms/send-single
+ * Admin-only. Sends a single SMS to a specific phone number.
+ * Body: { phone: "+254712345678", message: "Hello there" }
+ */
+app.post('/api/sms/send-single', async (req, res) => {
+  const liveKey = process.env.AFRICASTALKING_API_KEY || '';
+  if (!SMS_ENABLED || !liveKey) {
+    return res.status(503).json({ error: 'SMS not enabled on this server.' });
+  }
+
+  const { phone, message } = req.body || {};
+  if (!phone || !message) {
+    return res.status(400).json({ error: 'phone and message are required' });
+  }
+
+  const result = await sendSMS(phone, message);
+  res.json({ status: result.status, messageId: result.messageId, error: result.error || null });
+});
+
+/**
  * POST /api/sms/send-bulk
  * Admin-only. Sends a bulk SMS campaign to recipients filtered by package and
  * active-since criteria, then logs the campaign to sms_campaigns.
