@@ -906,8 +906,11 @@ app.post('/api/sms/send-bulk', async (req, res) => {
     const seen = new Set();
     const phones = [];
     for (const tx of (txns || [])) {
-      const p = (tx.phone || '').replace(/\D/g, '');
-      if (p && p.length >= 9 && !looksHashed(p) && !seen.has(p)) {
+      const raw = (tx.phone || '').trim();
+      // Check for hashed MSISDN on the RAW value before stripping non-digits
+      if (!raw || looksHashed(raw)) continue;
+      const p = raw.replace(/\D/g, '');
+      if (p && p.length >= 9 && !seen.has(p)) {
         seen.add(p);
         phones.push(p);
       }
@@ -1018,8 +1021,10 @@ app.get('/api/sms/estimate', async (req, res) => {
 
   const seen = new Set();
   for (const tx of (txns || [])) {
-    const p = (tx.phone || '').replace(/\D/g, '');
-    if (p && p.length >= 9 && !looksHashed(p)) seen.add(p);
+    const raw = (tx.phone || '').trim();
+    if (!raw || looksHashed(raw)) continue;
+    const p = raw.replace(/\D/g, '');
+    if (p && p.length >= 9) seen.add(p);
   }
   res.json({ count: seen.size });
 });
