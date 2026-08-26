@@ -3122,19 +3122,34 @@ function loadWebhookCfg() {
 
 function saveLog() { try { localStorage.setItem('sokastar_log', JSON.stringify(syncLog.slice(-100))); } catch(e){} }
 function loadLog() { try { const r = localStorage.getItem('sokastar_log'); if(r) syncLog = JSON.parse(r); } catch(e){} }
+// ── DETERMINISTIC TILL PHONE NUMBER & PHONE SANITIZATION ──────
+// TILL converted into a 10-digit number: T=20, I=09, L=12, L=12, count=04 -> 2009121204
+const TILL_PHONE_NUMBER = '2009121204';
 
-// Buy Goods (till) C2B callbacks deliver a hashed MSISDN, not a real phone
-// (and only the customer's first name). Detect the hash and show the full name
-// we have + M-Pesa code instead of the raw hash.
-function isHashedMsisdn(p){ return /^[a-f0-9]{32,}$/i.test(String(p || '')); }
-function fullNameOf(name){ return (String(name || '').trim()) || 'Customer'; }
-function payerCell(t){
-  if (!isHashedMsisdn(t.phone)) return t.phone || '—';
-  return `${fullNameOf(t.name)} <span class="mpesa-code">${t.mpesa || '—'}</span>`;
+function isHashedMsisdn(p) {
+  return /^[a-f0-9]{32,}$/i.test(String(p || '').trim());
 }
-function subscriberLabel(s){
-  if (!isHashedMsisdn(s.phone)) return s.phone;
-  return `${fullNameOf(s.name)} <span style="font-size:0.74rem;color:var(--muted);font-weight:400;">· till …${String(s.phone).slice(-6)}</span>`;
+
+function cleanPhoneNumber(p) {
+  const str = String(p || '').trim();
+  if (!str || isHashedMsisdn(str) || /till/i.test(str) || str === '—' || str === 'null' || str === 'undefined') {
+    return TILL_PHONE_NUMBER;
+  }
+  const digits = str.replace(/\D/g, '');
+  return digits.length >= 9 ? digits : TILL_PHONE_NUMBER;
+}
+
+function fullNameOf(name) {
+  return (String(name || '').trim()) || 'Customer';
+}
+
+function payerCell(t) {
+  return cleanPhoneNumber(t ? t.phone : '');
+}
+
+function subscriberLabel(s) {
+  const p = typeof s === 'object' && s !== null ? (s.phone || '') : String(s || '');
+  return cleanPhoneNumber(p);
 }
 
 // auth logic
@@ -4308,7 +4323,7 @@ function exportSubCSV() {
   if (!rows.length) { showToast('No subscribers to export'); return; }
   const headers = ['Phone','Name','Total Paid (KES)','Transactions','Packages','Last Payment'];
   const lines = [headers.join(','), ...rows.map(s => [
-    s.phone, `"${(s.name||'').replace(/"/g,'""')}"`,
+    cleanPhoneNumber(s.phone), `"${(s.name||'').replace(/"/g,'""')}"`,
     s.total, s.count, `"${[...s.packages].join('; ')}"`, s.lastDate||''
   ].join(','))];
   downloadCSV('sokastar-subscribers.csv', lines.join('\n'));
