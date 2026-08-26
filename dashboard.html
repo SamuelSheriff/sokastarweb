@@ -8,7 +8,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
-:root {
+/* ── THEME DEFINITIONS ────────────────────────────────────────── */
+
+/* 1. Neon Cyber (Default Dark) */
+:root, [data-theme="neon"] {
   --bg-body: #070a12;
   --bg-sidebar: #0b0f19;
   --bg-card: rgba(15, 23, 42, 0.72);
@@ -37,6 +40,226 @@
   --text-muted: #94a3b8;
   --text-dim: #64748b;
   --sidebar-w: 260px;
+  --theme-bg-gradient: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+}
+
+/* 2. SokaStar Green (Matches Main Site) */
+[data-theme="green"] {
+  --bg-body: #081009;
+  --bg-sidebar: #0b170d;
+  --bg-card: rgba(16, 28, 18, 0.85);
+  --bg-card-hover: rgba(22, 40, 25, 0.95);
+  --bg-dark3: #112214;
+  --border-glass: rgba(0, 200, 83, 0.18);
+  --border-glass-hover: rgba(0, 200, 83, 0.45);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  
+  --primary-gradient: linear-gradient(135deg, #00c853 0%, #007c2e 100%);
+  --purple-gradient: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  --green-gradient: linear-gradient(135deg, #00e676 0%, #00c853 100%);
+  --orange-gradient: linear-gradient(135deg, #ffd600 0%, #f59e0b 100%);
+  --cyan-gradient: linear-gradient(135deg, #00c853 0%, #06b6d4 100%);
+
+  --neon-blue: #00e676;
+  --neon-indigo: #00c853;
+  --neon-purple: #10b981;
+  --neon-green: #00c853;
+  --neon-orange: #f59e0b;
+  --neon-gold: #ffd600;
+  --neon-cyan: #10b981;
+  --neon-red: #ef4444;
+
+  --text-main: #f0fdf4;
+  --text-muted: #86efac;
+  --text-dim: #4ade80;
+  --theme-bg-gradient: radial-gradient(circle at 15% 15%, rgba(0, 200, 83, 0.12) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(255, 214, 0, 0.06) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(0, 230, 118, 0.05) 0%, transparent 50%);
+}
+
+/* 3. Midnight Obsidian (AMOLED Ultra Deep Dark) */
+[data-theme="midnight"] {
+  --bg-body: #030712;
+  --bg-sidebar: #060b19;
+  --bg-card: rgba(11, 17, 34, 0.88);
+  --bg-card-hover: rgba(18, 27, 52, 0.98);
+  --bg-dark3: #0a0f24;
+  --border-glass: rgba(139, 92, 246, 0.16);
+  --border-glass-hover: rgba(236, 72, 153, 0.45);
+  --border-subtle: rgba(255, 255, 255, 0.04);
+  
+  --primary-gradient: linear-gradient(135deg, #8b5cf6 0%, #d946ef 100%);
+  --purple-gradient: linear-gradient(135deg, #a855f7 0%, #ec4899 100%);
+  --green-gradient: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);
+  --orange-gradient: linear-gradient(135deg, #f43f5e 0%, #fb923c 100%);
+  --cyan-gradient: linear-gradient(135deg, #c084fc 0%, #f472b6 100%);
+
+  --neon-blue: #818cf8;
+  --neon-indigo: #8b5cf6;
+  --neon-purple: #ec4899;
+  --neon-green: #34d399;
+  --neon-orange: #fb7185;
+  --neon-gold: #f43f5e;
+  --neon-cyan: #38bdf8;
+  --neon-red: #f87171;
+
+  --text-main: #fdf4ff;
+  --text-muted: #cbd5e1;
+  --text-dim: #64748b;
+  --theme-bg-gradient: radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.12) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(236, 72, 153, 0.08) 0%, transparent 45%), radial-gradient(circle at 50% 50%, rgba(99, 102, 241, 0.05) 0%, transparent 50%);
+}
+
+/* 4. Clean Slate (Light Mode) */
+[data-theme="light"] {
+  --bg-body: #f4f6fa;
+  --bg-sidebar: #ffffff;
+  --bg-card: rgba(255, 255, 255, 0.94);
+  --bg-card-hover: #ffffff;
+  --bg-dark3: #e2e8f0;
+  --border-glass: rgba(203, 213, 225, 0.85);
+  --border-glass-hover: rgba(99, 102, 241, 0.5);
+  --border-subtle: rgba(226, 232, 240, 0.8);
+  
+  --primary-gradient: linear-gradient(135deg, #3b82f6 0%, #4f46e5 100%);
+  --purple-gradient: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+  --green-gradient: linear-gradient(135deg, #059669 0%, #10b981 100%);
+  --orange-gradient: linear-gradient(135deg, #ea580c 0%, #d97706 100%);
+  --cyan-gradient: linear-gradient(135deg, #0284c7 0%, #2563eb 100%);
+
+  --neon-blue: #2563eb;
+  --neon-indigo: #4f46e5;
+  --neon-purple: #7c3aed;
+  --neon-green: #059669;
+  --neon-orange: #ea580c;
+  --neon-gold: #d97706;
+  --neon-cyan: #0284c7;
+  --neon-red: #dc2626;
+
+  --text-main: #0f172a;
+  --text-muted: #475569;
+  --text-dim: #94a3b8;
+  --theme-bg-gradient: radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.05) 0%, transparent 40%), radial-gradient(circle at 85% 75%, rgba(59, 130, 246, 0.05) 0%, transparent 45%);
+}
+
+[data-theme="light"] .topbar { background: rgba(255, 255, 255, 0.9); }
+[data-theme="light"] .sidebar-user-card { background: rgba(0, 0, 0, 0.03); }
+[data-theme="light"] .modern-card,
+[data-theme="light"] .metric-card-modern,
+[data-theme="light"] .table-card,
+[data-theme="light"] .chart-card,
+[data-theme="light"] .webhook-status-card {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+}
+[data-theme="light"] .metric-number,
+[data-theme="light"] .welcome-heading,
+[data-theme="light"] .card-main-title,
+[data-theme="light"] .section-title,
+[data-theme="light"] .rank-name,
+[data-theme="light"] .order-meta-title,
+[data-theme="light"] .order-amount-tag,
+[data-theme="light"] .amount-cell,
+[data-theme="light"] .wh-status-title,
+[data-theme="light"] .wh-info-value,
+[data-theme="light"] .brand-title,
+[data-theme="light"] .user-name {
+  color: #0f172a !important;
+}
+[data-theme="light"] thead th { background: #f8fafc; color: #475569; }
+[data-theme="light"] .topbar-search input,
+[data-theme="light"] .form-input,
+[data-theme="light"] .form-select,
+[data-theme="light"] .pill-select,
+[data-theme="light"] .filter-select,
+[data-theme="light"] .filter-date,
+[data-theme="light"] .table-search {
+  background: #ffffff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+[data-theme="light"] .form-select option { background: #ffffff; color: #0f172a; }
+
+/* THEME PICKER DROPDOWN */
+.theme-picker-box {
+  position: relative;
+}
+
+.theme-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--border-glass);
+  border-radius: 10px;
+  color: var(--text-main);
+  font-size: 0.8rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.theme-btn:hover {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: var(--neon-indigo);
+}
+
+.theme-dropdown {
+  display: none;
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 220px;
+  background: var(--bg-sidebar);
+  border: 1px solid var(--border-glass);
+  border-radius: 14px;
+  padding: 8px;
+  z-index: 100;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(20px);
+}
+
+.theme-dropdown.show {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  animation: fadeInUp 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+.theme-option-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  width: 100%;
+  text-align: left;
+}
+
+.theme-option-btn:hover {
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--text-main);
+}
+
+.theme-option-btn.active {
+  background: var(--primary-gradient);
+  color: #ffffff;
+  font-weight: 700;
+}
+
+.theme-color-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.theme-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
 }
 
 *, *::before, *::after {
@@ -49,10 +272,7 @@ html, body {
   height: 100%;
   font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-body);
-  background-image: 
-    radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.08) 0%, transparent 40%),
-    radial-gradient(circle at 85% 75%, rgba(16, 185, 129, 0.05) 0%, transparent 45%),
-    radial-gradient(circle at 50% 50%, rgba(139, 92, 246, 0.04) 0%, transparent 50%);
+  background-image: var(--theme-bg-gradient);
   background-attachment: fixed;
   color: var(--text-main);
   overflow-x: hidden;
@@ -1643,6 +1863,45 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
             <kbd>⌘K</kbd>
           </div>
 
+          <!-- Theme Picker Dropdown -->
+          <div class="theme-picker-box" id="theme-picker-box">
+            <button class="theme-btn" id="theme-toggle-btn" onclick="toggleThemeDropdown(event)" title="Switch Theme">
+              <i data-lucide="palette" style="width:16px;height:16px;"></i>
+              <span id="theme-btn-label">Neon Cyber</span>
+              <i data-lucide="chevron-down" style="width:13px;height:13px;opacity:0.7;"></i>
+            </button>
+            <div class="theme-dropdown" id="theme-dropdown">
+              <button class="theme-option-btn active" id="th-opt-neon" data-theme-val="neon" onclick="applyTheme('neon')">
+                <span>⚡ Neon Cyber</span>
+                <div class="theme-color-dots">
+                  <span class="theme-dot" style="background:#3b82f6;"></span>
+                  <span class="theme-dot" style="background:#6366f1;"></span>
+                </div>
+              </button>
+              <button class="theme-option-btn" id="th-opt-green" data-theme-val="green" onclick="applyTheme('green')">
+                <span>⚽ SokaStar Green</span>
+                <div class="theme-color-dots">
+                  <span class="theme-dot" style="background:#00c853;"></span>
+                  <span class="theme-dot" style="background:#ffd600;"></span>
+                </div>
+              </button>
+              <button class="theme-option-btn" id="th-opt-midnight" data-theme-val="midnight" onclick="applyTheme('midnight')">
+                <span>🌌 Midnight Obsidian</span>
+                <div class="theme-color-dots">
+                  <span class="theme-dot" style="background:#8b5cf6;"></span>
+                  <span class="theme-dot" style="background:#ec4899;"></span>
+                </div>
+              </button>
+              <button class="theme-option-btn" id="th-opt-light" data-theme-val="light" onclick="applyTheme('light')">
+                <span>☀️ Clean Slate (Light)</span>
+                <div class="theme-color-dots">
+                  <span class="theme-dot" style="background:#ffffff;border:1px solid #94a3b8;"></span>
+                  <span class="theme-dot" style="background:#3b82f6;"></span>
+                </div>
+              </button>
+            </div>
+          </div>
+
           <div class="notif-btn" onclick="showPage('transactions', document.querySelectorAll('.nav-item')[2])" title="Recent Transactions">
             <i data-lucide="bell" style="width:18px;height:18px;"></i>
             <span class="notif-badge"></span>
@@ -1923,38 +2182,6 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           </div>
 
         </div><!-- end tri-split-grid -->
-
-        <!-- DESIGN HIGHLIGHTS FOOTER BAR -->
-        <div class="highlights-bar">
-          <div class="highlight-item">
-            <div class="highlight-icon"><i data-lucide="palette" style="width:18px;height:18px;"></i></div>
-            <div>
-              <div class="highlight-title">Dark + Neon Theme</div>
-              <div class="highlight-desc">Sleek obsidian backdrop with neon gradients.</div>
-            </div>
-          </div>
-          <div class="highlight-item">
-            <div class="highlight-icon"><i data-lucide="layers" style="width:18px;height:18px;"></i></div>
-            <div>
-              <div class="highlight-title">Glassmorphism Cards</div>
-              <div class="highlight-desc">Subtle transparency & blur for depth.</div>
-            </div>
-          </div>
-          <div class="highlight-item">
-            <div class="highlight-icon"><i data-lucide="activity" style="width:18px;height:18px;"></i></div>
-            <div>
-              <div class="highlight-title">Real-Time Data</div>
-              <div class="highlight-desc">Instant auto-sync with Supabase & M-Pesa.</div>
-            </div>
-          </div>
-          <div class="highlight-item">
-            <div class="highlight-icon"><i data-lucide="smartphone" style="width:18px;height:18px;"></i></div>
-            <div>
-              <div class="highlight-title">Responsive Touch</div>
-              <div class="highlight-desc">Optimized for mobile, tablet, & desktop.</div>
-            </div>
-          </div>
-        </div>
 
       </div><!-- end page-dashboard -->
 
@@ -2377,12 +2604,66 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
         </div>
       </div>
 
-      <!-- SECURITY SETTINGS -->
+      <!-- SECURITY & PREFERENCES SETTINGS -->
       <div class="page-content" id="page-settings">
+        <div class="section-header">
+          <div><div class="section-tag-label">Admin Preferences</div><div class="section-title">Dashboard Theme</div></div>
+        </div>
+        <div class="table-card" style="padding:28px; max-width: 650px; margin-bottom: 28px;">
+          <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:18px;">
+            Choose your preferred color theme. Changes take effect immediately and are saved across sessions.
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(2, 1fr);gap:14px;">
+            <div onclick="applyTheme('neon')" class="theme-option-btn" style="padding:16px;border:1px solid var(--border-glass);border-radius:12px;cursor:pointer;background:rgba(15,23,42,0.6);">
+              <div>
+                <div style="font-weight:700;color:var(--text-main);font-size:0.9rem;margin-bottom:4px;">⚡ Neon Cyber</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">Default dark obsidian + electric cyan/indigo glow</div>
+              </div>
+              <div class="theme-color-dots" style="margin-left:8px;">
+                <span class="theme-dot" style="background:#3b82f6;"></span>
+                <span class="theme-dot" style="background:#6366f1;"></span>
+              </div>
+            </div>
+
+            <div onclick="applyTheme('green')" class="theme-option-btn" style="padding:16px;border:1px solid var(--border-glass);border-radius:12px;cursor:pointer;background:rgba(16,28,18,0.6);">
+              <div>
+                <div style="font-weight:700;color:var(--text-main);font-size:0.9rem;margin-bottom:4px;">⚽ SokaStar Green</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">Matches main client website (Pitch emerald & gold)</div>
+              </div>
+              <div class="theme-color-dots" style="margin-left:8px;">
+                <span class="theme-dot" style="background:#00c853;"></span>
+                <span class="theme-dot" style="background:#ffd600;"></span>
+              </div>
+            </div>
+
+            <div onclick="applyTheme('midnight')" class="theme-option-btn" style="padding:16px;border:1px solid var(--border-glass);border-radius:12px;cursor:pointer;background:rgba(11,17,34,0.6);">
+              <div>
+                <div style="font-weight:700;color:var(--text-main);font-size:0.9rem;margin-bottom:4px;">🌌 Midnight Obsidian</div>
+                <div style="font-size:0.72rem;color:var(--text-muted);">AMOLED deep black with violet & fuchsia neon</div>
+              </div>
+              <div class="theme-color-dots" style="margin-left:8px;">
+                <span class="theme-dot" style="background:#8b5cf6;"></span>
+                <span class="theme-dot" style="background:#ec4899;"></span>
+              </div>
+            </div>
+
+            <div onclick="applyTheme('light')" class="theme-option-btn" style="padding:16px;border:1px solid var(--border-glass);border-radius:12px;cursor:pointer;background:rgba(241,245,249,0.8);">
+              <div>
+                <div style="font-weight:700;color:#0f172a;font-size:0.9rem;margin-bottom:4px;">☀️ Clean Slate (Light)</div>
+                <div style="font-size:0.72rem;color:#64748b;">Crisp light mode with frosted white cards</div>
+              </div>
+              <div class="theme-color-dots" style="margin-left:8px;">
+                <span class="theme-dot" style="background:#ffffff;border:1px solid #94a3b8;"></span>
+                <span class="theme-dot" style="background:#3b82f6;"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <div class="section-header">
           <div><div class="section-tag-label">Admin Security</div><div class="section-title">Change Password</div></div>
         </div>
-        <div class="table-card" style="padding:28px; max-width: 600px;">
+        <div class="table-card" style="padding:28px; max-width: 650px;">
           <div class="form-group">
             <label class="form-label">Email Address (Read-only)</label>
             <input type="email" class="form-input" id="settings-email" readonly style="opacity: 0.6; cursor: not-allowed;">
@@ -2582,6 +2863,62 @@ let syncTimer  = null;
 let webhookCfg = { serverUrl: window.location.origin, apiKey: '', interval: 30 };
 let syncLog    = [];
 
+// ── THEME MANAGEMENT ──────────────────────────────────────────
+const THEME_LABELS = {
+  neon:     'Neon Cyber',
+  green:    'SokaStar Green',
+  midnight: 'Midnight',
+  light:    'Clean Light'
+};
+
+let currentTheme = 'neon';
+try {
+  const savedTh = localStorage.getItem('sokastar_theme');
+  if (savedTh && THEME_LABELS[savedTh]) currentTheme = savedTh;
+} catch(e){}
+
+function applyTheme(themeName) {
+  if (!THEME_LABELS[themeName]) themeName = 'neon';
+  currentTheme = themeName;
+  document.documentElement.setAttribute('data-theme', themeName);
+  try { localStorage.setItem('sokastar_theme', themeName); } catch(e){}
+  
+  // Update button label
+  const labelEl = document.getElementById('theme-btn-label');
+  if (labelEl) labelEl.textContent = THEME_LABELS[themeName] || themeName;
+
+  // Update active state in dropdown
+  document.querySelectorAll('.theme-option-btn').forEach(btn => {
+    if (btn.getAttribute('data-theme-val') === themeName) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  // Close dropdown
+  const dd = document.getElementById('theme-dropdown');
+  if (dd) dd.classList.remove('show');
+
+  // Re-render chart with matching theme colors if already built
+  if (revenueChart) buildRevenueChart(chartDays);
+}
+
+function toggleThemeDropdown(e) {
+  if (e) e.stopPropagation();
+  const dd = document.getElementById('theme-dropdown');
+  if (dd) dd.classList.toggle('show');
+}
+
+// Close theme dropdown when clicking anywhere outside
+window.addEventListener('click', (e) => {
+  const dd = document.getElementById('theme-dropdown');
+  const box = document.getElementById('theme-picker-box');
+  if (dd && box && !box.contains(e.target)) {
+    dd.classList.remove('show');
+  }
+});
+
 // storage helper methods
 function saveDB()  { try { localStorage.setItem('sokastar_db', JSON.stringify(db)); } catch(e){} }
 function loadDB()  { try { const r = localStorage.getItem('sokastar_db'); if(r) db = JSON.parse(r); } catch(e){} }
@@ -2663,6 +3000,7 @@ function closeSidebar() {
 }
 
 function initAdmin() {
+  applyTheme(currentTheme);
   const now = new Date();
   const topDateEl = document.getElementById('topbar-date');
   if (topDateEl) {
@@ -2893,10 +3231,19 @@ function buildRevenueChart(days) {
   if (!canvas) return;
   const ctx = canvas.getContext('2d');
   
+  // Theme-aware colors
+  const themeColors = {
+    neon:     { primary: '#3b82f6', compare: '#a855f7', fillStart: 'rgba(59, 130, 246, 0.35)', fillEnd: 'rgba(59, 130, 246, 0.0)', grid: 'rgba(255, 255, 255, 0.05)', ttBg: '#0f172a' },
+    green:    { primary: '#00c853', compare: '#ffd600', fillStart: 'rgba(0, 200, 83, 0.35)', fillEnd: 'rgba(0, 200, 83, 0.0)', grid: 'rgba(0, 200, 83, 0.08)', ttBg: '#0b170d' },
+    midnight: { primary: '#8b5cf6', compare: '#ec4899', fillStart: 'rgba(139, 92, 246, 0.35)', fillEnd: 'rgba(139, 92, 246, 0.0)', grid: 'rgba(139, 92, 246, 0.08)', ttBg: '#060b19' },
+    light:    { primary: '#2563eb', compare: '#7c3aed', fillStart: 'rgba(37, 99, 235, 0.22)', fillEnd: 'rgba(37, 99, 235, 0.0)', grid: 'rgba(0, 0, 0, 0.06)', ttBg: '#1e293b' }
+  };
+  const tc = themeColors[currentTheme] || themeColors.neon;
+
   // Create gradient fill for line chart
   const gradLine = ctx.createLinearGradient(0, 0, 0, 270);
-  gradLine.addColorStop(0, 'rgba(59, 130, 246, 0.35)');
-  gradLine.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+  gradLine.addColorStop(0, tc.fillStart);
+  gradLine.addColorStop(1, tc.fillEnd);
 
   if (revenueChart) revenueChart.destroy();
   revenueChart = new Chart(ctx, {
@@ -2907,12 +3254,12 @@ function buildRevenueChart(days) {
         { 
           label: 'This Period', 
           data: dataCurrent,
-          borderColor: '#3b82f6',
+          borderColor: tc.primary,
           borderWidth: 3,
           tension: 0.4,
           fill: true,
           backgroundColor: gradLine,
-          pointBackgroundColor: '#3b82f6',
+          pointBackgroundColor: tc.primary,
           pointBorderColor: '#ffffff',
           pointBorderWidth: 2,
           pointRadius: 4,
@@ -2921,7 +3268,7 @@ function buildRevenueChart(days) {
         { 
           label: 'Previous Period', 
           data: dataPrev,
-          borderColor: '#a855f7',
+          borderColor: tc.compare,
           borderWidth: 2,
           borderDash: [5, 5],
           tension: 0.4,
@@ -2938,12 +3285,12 @@ function buildRevenueChart(days) {
       plugins: { 
         legend: { display: false }, 
         tooltip: {
-          backgroundColor: '#0f172a',
+          backgroundColor: tc.ttBg,
           titleColor: '#f8fafc',
           bodyColor: '#94a3b8',
           titleFont: { family: 'Plus Jakarta Sans', weight: 'bold', size: 13 },
           bodyFont: { family: 'Plus Jakarta Sans', size: 12 },
-          borderColor: 'rgba(99, 102, 241, 0.3)',
+          borderColor: tc.primary + '55',
           borderWidth: 1,
           padding: 12,
           boxPadding: 6,
@@ -2957,7 +3304,7 @@ function buildRevenueChart(days) {
           ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11 } } 
         },
         y: { 
-          grid: { color: 'rgba(255, 255, 255, 0.05)' }, 
+          grid: { color: tc.grid }, 
           ticks: { 
             color: '#64748b', 
             font: { family: 'Plus Jakarta Sans', size: 11 },
