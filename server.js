@@ -369,8 +369,6 @@ const PKG_MAP = [
   { min: 15,  max: 29,  name: 'Half Time Full Time' },
 ];
 
-const crypto = require('crypto');
-
 // Cookie helper
 function getCookie(req, name) {
   const cookies = req.headers.cookie;
