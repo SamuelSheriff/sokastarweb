@@ -1,0 +1,5 @@
+node_modules
+transactions.json
+.env
+.DS_Store
+admin_password.json

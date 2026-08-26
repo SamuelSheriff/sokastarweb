@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sokastar Admin Access</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow:wght@300;400;600;700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green: #00c853; 
+  --green-dark: #007c2e; 
+  --green-dim: rgba(0,200,83,0.08);
+  --gold: #ffd600; 
+  --dark: #0a0f0a; 
+  --dark2: #111811; 
+  --card: rgba(21, 32, 21, 0.75); 
+  --border: rgba(0,200,83,0.18);
+  --text: #e8f5e9; 
+  --muted: #7a9e7a;
+  --red: #ff4444; 
+  --white: #ffffff;
+}
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  height: 100%;
+  font-family: 'Barlow', sans-serif;
+  background: radial-gradient(circle at center, #112211 0%, var(--dark) 100%);
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* Background animated glow */
+.bg-glow {
+  position: absolute;
+  width: 500px;
+  height: 500px;
+  background: radial-gradient(circle, rgba(0, 200, 83, 0.1) 0%, transparent 70%);
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+  animation: pulse-glow 8s infinite alternate;
+}
+
+@keyframes pulse-glow {
+  0% { transform: translate(-50%, -50%) scale(0.9); opacity: 0.8; }
+  100% { transform: translate(-50%, -50%) scale(1.1); opacity: 1; }
+}
+
+/* Container */
+.login-container {
+  position: relative;
+  z-index: 10;
+  width: 100%;
+  max-width: 420px;
+  padding: 20px;
+}
+
+.login-card {
+  background: var(--card);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 48px 40px;
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5), 0 0 1px 1px rgba(0, 200, 83, 0.05);
+  animation: slide-up 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.login-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.logo-star {
+  width: 38px;
+  height: 38px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
+  animation: spin-slow 20s linear infinite;
+}
+
+@keyframes spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.login-logo-text {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 2px;
+  color: var(--white);
+  line-height: 1;
+}
+
+.login-logo-text span {
+  color: var(--green);
+}
+
+.login-tagline {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  text-align: center;
+  margin-bottom: 36px;
+}
+
+/* Forms */
+.form-group {
+  margin-bottom: 22px;
+  position: relative;
+}
+
+.login-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: block;
+  transition: color 0.3s;
+}
+
+.login-input {
+  width: 100%;
+  padding: 12px 16px;
+  background: rgba(10, 15, 10, 0.8);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-family: 'Barlow', sans-serif;
+  font-size: 1rem;
+  outline: none;
+  transition: all 0.3s ease;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.login-input:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px rgba(0, 200, 83, 0.15), inset 0 2px 4px rgba(0,0,0,0.1);
+  background: var(--dark2);
+}
+
+.login-input:focus + .login-label {
+  color: var(--green);
+}
+
+.login-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--green), var(--green-dark));
+  color: var(--dark);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  font-size: 1.05rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(0, 200, 83, 0.2);
+  margin-top: 10px;
+}
+
+.login-btn:hover {
+  background: linear-gradient(135deg, #00e564, #009638);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(0, 200, 83, 0.3);
+}
+
+.login-btn:active {
+  transform: translateY(1px);
+}
+
+.login-error {
+  background: rgba(255, 68, 68, 0.1);
+  border: 1px solid rgba(255, 68, 68, 0.3);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: var(--red);
+  font-size: 0.9rem;
+  margin-bottom: 24px;
+  display: none;
+  text-align: center;
+  animation: shake 0.4s ease;
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+</style>
+<script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+
+
+<div class="bg-glow"></div>
+
+<div class="login-container">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="logo-star"></div>
+      <div class="login-logo-text">Soka<span>star</span></div>
+    </div>
+    <div class="login-tagline">Admin Access Control</div>
+    
+    <!-- Sign In State -->
+    <div id="login-form-state">
+      <div class="login-error" id="login-error">Invalid credentials. Please try again.</div>
+      
+      <div class="form-group">
+        <label class="login-label" for="login-email">Email Address</label>
+        <input type="email" class="login-input" id="login-email" placeholder="admin@sokastar.com" autocomplete="email">
+      </div>
+      
+      <div class="form-group">
+        <label class="login-label" for="login-pass">Password</label>
+        <div style="position: relative; display: flex; align-items: center;">
+          <input type="password" class="login-input" id="login-pass" placeholder="••••••••••" autocomplete="current-password" style="padding-right: 44px; margin-bottom: 0;">
+          <button type="button" onclick="togglePasswordVisibility()" style="position: absolute; right: 12px; background: transparent; border: none; color: var(--muted); cursor: pointer; display: flex; align-items: center; justify-content: center; outline: none; padding: 0;">
+            <i data-lucide="eye" id="toggle-eye-icon" style="width: 18px; height: 18px;"></i>
+          </button>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 22px;"></div>
+      
+      <button class="login-btn" onclick="submitLogin()">Sign In to Dashboard</button>
+    </div>
+
+
+  </div>
+</div>
+
+
+<script>
+async function submitLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass = document.getElementById('login-pass').value;
+  const errorDiv = document.getElementById('login-error');
+  
+  if (!email || !pass) {
+    showError('Please fill in all fields.');
+    return;
+  }
+  
+  errorDiv.style.display = 'none';
+  
+  try {
+    const res = await fetch('/api/login', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email, password: pass })
+    });
+    
+    const data = await res.json();
+    if (res.ok && data.status === 'ok') {
+      window.location.href = '/admin';
+    } else {
+      showError(data.error || 'Invalid credentials.');
+    }
+  } catch (e) {
+    showError('Network error. Please check your connection.');
+  }
+}
+
+function showError(msg) {
+  const errorDiv = document.getElementById('login-error');
+  errorDiv.textContent = msg;
+  errorDiv.style.display = 'block';
+  
+  // Re-trigger shake animation
+  errorDiv.style.animation = 'none';
+  errorDiv.offsetHeight; // trigger reflow
+  errorDiv.style.animation = null;
+  
+  document.getElementById('login-pass').value = '';
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') submitLogin();
+});
+
+// Initialize Lucide icons
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof lucide !== 'undefined') {
+    lucide.createIcons();
+  }
+});
+
+function togglePasswordVisibility() {
+  const passInput = document.getElementById('login-pass');
+  const eyeIcon = document.getElementById('toggle-eye-icon');
+  if (passInput.type === 'password') {
+    passInput.type = 'text';
+    eyeIcon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    passInput.type = 'password';
+    eyeIcon.setAttribute('data-lucide', 'eye');
+  }
+  lucide.createIcons();
+}
+
+
+</script>
+</body>
+</html>
