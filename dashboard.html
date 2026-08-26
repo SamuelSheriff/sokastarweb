@@ -3622,9 +3622,9 @@ function openMetricDrilldown(type) {
     // 2. TODAY'S REVENUE: Hourly Breakdown & Orders List
     iconBox.className = 'metric-icon-square icon-blue';
     iconBox.innerHTML = '<i data-lucide="shopping-bag" style="width:20px;height:20px;"></i>';
-    catTag.textContent = 'Today\\'s Live Performance';
-    titleEl.textContent = "Today\\'s Revenue & Hourly Order Flow";
-    chartTitle.textContent = "Today\\'s Hourly Income (KES)";
+    catTag.textContent = "Today's Live Performance";
+    titleEl.textContent = "Today's Revenue & Hourly Order Flow";
+    chartTitle.textContent = "Today's Hourly Income (KES)";
     chartSub.textContent = 'Payment volume from 00:00 to 23:00 today';
 
     // 24 Hour Distribution
@@ -3645,8 +3645,8 @@ function openMetricDrilldown(type) {
     });
 
     statsGrid.innerHTML = `
-      <div class="wh-info-cell"><div class="wh-info-label">Today\\'s Total</div><div class="wh-info-value green">KES ${todayAmt.toLocaleString()}</div></div>
-      <div class="wh-info-cell"><div class="wh-info-label">Today\\'s Orders</div><div class="wh-info-value">${todayTx.length}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Today's Total</div><div class="wh-info-value green">KES ${todayAmt.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Today's Orders</div><div class="wh-info-value">${todayTx.length}</div></div>
       <div class="wh-info-cell"><div class="wh-info-label">Avg Order Today</div><div class="wh-info-value">KES ${todayTx.length ? Math.round(todayAmt/todayTx.length) : 0}</div></div>
       <div class="wh-info-cell"><div class="wh-info-label">Date</div><div class="wh-info-value" style="font-size:0.95rem;">${todayStr}</div></div>
     `;
@@ -3675,7 +3675,7 @@ function openMetricDrilldown(type) {
     });
 
     detailsBox.innerHTML = `
-      <div style="font-size:0.85rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">Today\\'s Transactions (${todayTx.length})</div>
+      <div style="font-size:0.85rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">Today's Transactions (${todayTx.length})</div>
       <div style="max-height:180px;overflow-y:auto;border:1px solid var(--border-glass);border-radius:12px;">
         <table style="width:100%;border-collapse:collapse;">
           <thead><tr><th style="padding:10px 14px;">Time</th><th style="padding:10px 14px;">Name / Phone</th><th style="padding:10px 14px;">Package</th><th style="padding:10px 14px;">M-Pesa</th><th style="padding:10px 14px;">Amount</th></tr></thead>
