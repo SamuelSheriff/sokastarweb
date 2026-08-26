@@ -1917,13 +1917,13 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
       <!-- DASHBOARD PAGE CONTENT -->
       <div class="page-content active" id="page-dashboard">
         
-        <!-- 4 TOP METRIC CARDS WITH NEON ICONS AND SPARKLINES -->
+        <!-- 4 TOP METRIC CARDS WITH NEON ICONS AND SPARKLINES (CLICKABLE DRILL-DOWN) -->
         <div class="metrics-grid-modern">
           
           <!-- Card 1: Total Revenue -->
-          <div class="metric-card-modern">
+          <div class="metric-card-modern" onclick="openMetricDrilldown('total')" title="Click to view income breakdown bar graph & analytics" style="cursor:pointer;">
             <div class="metric-header-row">
-              <span class="metric-label-text">Total Revenue</span>
+              <span class="metric-label-text">Total Revenue ↗</span>
               <div class="metric-icon-square icon-purple">$</div>
             </div>
             <div class="metric-number" id="m-total">KES 0</div>
@@ -1940,9 +1940,9 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           </div>
 
           <!-- Card 2: Today's Orders / Revenue -->
-          <div class="metric-card-modern">
+          <div class="metric-card-modern" onclick="openMetricDrilldown('today')" title="Click to view today's hourly income chart & live orders" style="cursor:pointer;">
             <div class="metric-header-row">
-              <span class="metric-label-text">Today's Revenue</span>
+              <span class="metric-label-text">Today's Revenue ↗</span>
               <div class="metric-icon-square icon-blue"><i data-lucide="shopping-bag" style="width:18px;height:18px;"></i></div>
             </div>
             <div class="metric-number" id="m-today">KES 0</div>
@@ -1959,9 +1959,9 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           </div>
 
           <!-- Card 3: Customers / Subscribers -->
-          <div class="metric-card-modern">
+          <div class="metric-card-modern" onclick="openMetricDrilldown('subs')" title="Click to view subscriber growth & spender analytics" style="cursor:pointer;">
             <div class="metric-header-row">
-              <span class="metric-label-text">Subscribers</span>
+              <span class="metric-label-text">Subscribers ↗</span>
               <div class="metric-icon-square icon-green"><i data-lucide="users" style="width:18px;height:18px;"></i></div>
             </div>
             <div class="metric-number" id="m-subs">0</div>
@@ -1978,9 +1978,9 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           </div>
 
           <!-- Card 4: Avg Transaction & Repeat Rate -->
-          <div class="metric-card-modern">
+          <div class="metric-card-modern" onclick="openMetricDrilldown('atv')" title="Click to view ticket size distribution & price tier breakdown" style="cursor:pointer;">
             <div class="metric-header-row">
-              <span class="metric-label-text">Avg. Transaction</span>
+              <span class="metric-label-text">Avg. Transaction ↗</span>
               <div class="metric-icon-square icon-orange"><i data-lucide="trending-up" style="width:18px;height:18px;"></i></div>
             </div>
             <div class="metric-number" id="m-atv">KES 0</div>
@@ -2003,22 +2003,36 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           
           <!-- Left: Revenue Overview Line Chart -->
           <div class="modern-card">
-            <div class="card-header-flex">
+            <div class="card-header-flex" style="flex-wrap:wrap;gap:12px;">
               <div class="card-title-group">
                 <div class="card-main-title">Revenue Overview</div>
                 <i data-lucide="help-circle" class="card-info-icon" title="Daily incoming payment volume"></i>
               </div>
               
-              <div style="display:flex;align-items:center;gap:14px;">
+              <div style="display:flex;align-items:center;flex-wrap:wrap;gap:12px;">
                 <div class="legend-group">
                   <div class="legend-item"><span class="legend-dot dot-blue"></span> This Period</div>
                   <div class="legend-item"><span class="legend-dot dot-purple"></span> Previous</div>
                 </div>
 
-                <select class="pill-select" onchange="setChartPeriod(parseInt(this.value,10), this)">
+                <!-- Custom Date Range Picker Container -->
+                <div id="rev-custom-dates" style="display:none;align-items:center;gap:6px;">
+                  <input type="date" class="filter-date" id="rev-date-from" style="padding:5px 8px;font-size:0.75rem;">
+                  <span style="font-size:0.75rem;color:var(--text-dim);">to</span>
+                  <input type="date" class="filter-date" id="rev-date-to" style="padding:5px 8px;font-size:0.75rem;">
+                  <button class="btn-submit" style="padding:5px 12px;font-size:0.72rem;" onclick="applyCustomRevRange()">Apply</button>
+                </div>
+
+                <select class="pill-select" id="rev-period-select" onchange="onRevenuePeriodChange(this.value)">
                   <option value="7">7 Days</option>
                   <option value="14">14 Days</option>
-                  <option value="30">30 Days</option>
+                  <option value="30">30 Days (1 Mo)</option>
+                  <option value="90">90 Days (3 Mo)</option>
+                  <option value="180">180 Days (6 Mo)</option>
+                  <option value="365">1 Year</option>
+                  <option value="730">2 Years</option>
+                  <option value="all">All Time</option>
+                  <option value="custom">📅 Custom Date Range...</option>
                 </select>
               </div>
             </div>
@@ -2759,6 +2773,46 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
   </div><!-- end admin-layout -->
 </div><!-- end admin-screen -->
 
+<!-- METRIC DRILLDOWN MODAL -->
+<div id="metric-drilldown-modal" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,0.78);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px;">
+  <div style="background:var(--bg-sidebar);border:1px solid var(--border-glass);border-radius:20px;width:100%;max-width:800px;max-height:90vh;overflow-y:auto;padding:28px 32px;position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+    <button onclick="closeMetricDrilldown()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.06);border:1px solid var(--border-glass);color:var(--text-main);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;line-height:1;transition:all .2s;">&times;</button>
+    
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
+      <div id="drill-icon-box" class="metric-icon-square icon-purple" style="width:44px;height:44px;font-size:1.1rem;">$</div>
+      <div>
+        <div style="font-size:0.7rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--neon-indigo);" id="drill-category-tag">Analytics Inspector</div>
+        <h2 style="font-size:1.35rem;font-weight:800;color:var(--text-main);" id="drill-title">Revenue Analytics</h2>
+      </div>
+    </div>
+
+    <!-- Quick stats grid -->
+    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;margin:20px 0;" id="drill-stats-grid">
+      <!-- Injected by JS -->
+    </div>
+
+    <!-- Chart Container -->
+    <div style="background:var(--bg-card);border:1px solid var(--border-glass);border-radius:16px;padding:20px;margin-bottom:20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <span style="font-size:0.88rem;font-weight:700;color:var(--text-main);" id="drill-chart-title">Income Distribution Chart</span>
+        <span style="font-size:0.75rem;color:var(--text-dim);" id="drill-chart-sub">Visual Representation</span>
+      </div>
+      <div style="position:relative;width:100%;height:260px;">
+        <canvas id="drilldownChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Drilldown Data Details / Table -->
+    <div id="drill-details-container">
+      <!-- Injected dynamically -->
+    </div>
+
+    <div style="text-align:right;margin-top:20px;">
+      <button class="btn-secondary" onclick="closeMetricDrilldown()">Close Inspector</button>
+    </div>
+  </div>
+</div>
+
 <!-- TIP MODAL -->
 <div id="tip-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;">
   <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:32px 28px;position:relative;">
@@ -3212,19 +3266,157 @@ function refreshDashboard() {
   if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
-function buildRevenueChart(days) {
-  const labels = [], dataCurrent = [], dataPrev = [];
-  
-  for (let i = days - 1; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const ds = toLocalDateStr(d);
-    labels.push(d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }));
-    dataCurrent.push(db.transactions.filter(t => t.date === ds).reduce((s,t) => s + Number(t.amount), 0));
+// ── REVENUE OVERVIEW CONTROLS & DYNAMIC TIME RANGES ────────────
+let currentRevPeriod = 7;
+let currentCustomRange = null;
 
-    // Previous comparison period
-    const dp = new Date(d); dp.setDate(dp.getDate() - days);
-    const dsp = toLocalDateStr(dp);
-    dataPrev.push(db.transactions.filter(t => t.date === dsp).reduce((s,t) => s + Number(t.amount), 0));
+function onRevenuePeriodChange(val) {
+  const customBox = document.getElementById('rev-custom-dates');
+  if (val === 'custom') {
+    if (customBox) customBox.style.display = 'inline-flex';
+    const now = new Date();
+    const dFrom = new Date(); dFrom.setDate(dFrom.getDate() - 30);
+    const inpFrom = document.getElementById('rev-date-from');
+    const inpTo = document.getElementById('rev-date-to');
+    if (inpFrom && !inpFrom.value) inpFrom.value = toLocalDateStr(dFrom);
+    if (inpTo && !inpTo.value) inpTo.value = toLocalDateStr(now);
+    applyCustomRevRange();
+  } else {
+    if (customBox) customBox.style.display = 'none';
+    currentCustomRange = null;
+    currentRevPeriod = val === 'all' ? 'all' : parseInt(val, 10);
+    buildRevenueChart(currentRevPeriod);
+  }
+}
+
+function applyCustomRevRange() {
+  const from = document.getElementById('rev-date-from').value;
+  const to = document.getElementById('rev-date-to').value;
+  if (!from || !to) {
+    showToast('Please select both From and To dates');
+    return;
+  }
+  if (from > to) {
+    showToast('From date cannot be after To date');
+    return;
+  }
+  currentCustomRange = { from, to };
+  buildRevenueChart(currentCustomRange);
+}
+
+function buildRevenueChart(period) {
+  const labels = [], dataCurrent = [], dataPrev = [];
+  const now = new Date();
+
+  if (typeof period === 'object' && period !== null && period.from && period.to) {
+    // Custom Date Range
+    const start = new Date(period.from);
+    const end = new Date(period.to);
+    const dayDiff = Math.max(1, Math.round((end - start) / (1000 * 60 * 60 * 24)) + 1);
+
+    // If more than 60 days, group by weeks for cleaner chart
+    if (dayDiff > 60) {
+      let cur = new Date(start);
+      while (cur <= end) {
+        const next = new Date(cur); next.setDate(next.getDate() + 6);
+        const curEnd = next > end ? end : next;
+        const curStr1 = toLocalDateStr(cur);
+        const curStr2 = toLocalDateStr(curEnd);
+        labels.push(`${cur.toLocaleDateString('en-GB', { day:'numeric', month:'short' })}`);
+        const sum = db.transactions.filter(t => t.date >= curStr1 && t.date <= curStr2).reduce((s,t) => s + Number(t.amount), 0);
+        dataCurrent.push(sum);
+
+        // Previous equivalent span
+        const pStart = new Date(cur); pStart.setDate(pStart.getDate() - dayDiff);
+        const pEnd = new Date(curEnd); pEnd.setDate(pEnd.getDate() - dayDiff);
+        const pStr1 = toLocalDateStr(pStart);
+        const pStr2 = toLocalDateStr(pEnd);
+        const pSum = db.transactions.filter(t => t.date >= pStr1 && t.date <= pStr2).reduce((s,t) => s + Number(t.amount), 0);
+        dataPrev.push(pSum);
+
+        cur.setDate(cur.getDate() + 7);
+      }
+    } else {
+      let cur = new Date(start);
+      while (cur <= end) {
+        const ds = toLocalDateStr(cur);
+        labels.push(cur.toLocaleDateString('en-GB', { day:'numeric', month:'short' }));
+        dataCurrent.push(db.transactions.filter(t => t.date === ds).reduce((s,t) => s + Number(t.amount), 0));
+
+        const dp = new Date(cur); dp.setDate(dp.getDate() - dayDiff);
+        const dsp = toLocalDateStr(dp);
+        dataPrev.push(db.transactions.filter(t => t.date === dsp).reduce((s,t) => s + Number(t.amount), 0));
+
+        cur.setDate(cur.getDate() + 1);
+      }
+    }
+  } else if (period === 'all') {
+    // All-time: Group by months
+    const allDates = db.transactions.map(t => t.date).filter(Boolean).sort();
+    const firstDate = allDates.length ? new Date(allDates[0]) : new Date();
+    let cur = new Date(firstDate.getFullYear(), firstDate.getMonth(), 1);
+    const end = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+
+    while (cur <= end) {
+      const monthPrefix = toLocalDateStr(cur).slice(0, 7);
+      labels.push(cur.toLocaleDateString('en-GB', { month:'short', year:'2-digit' }));
+      dataCurrent.push(db.transactions.filter(t => t.date.startsWith(monthPrefix)).reduce((s,t) => s + Number(t.amount), 0));
+
+      // Previous year same month
+      const pYearMonth = `${cur.getFullYear() - 1}-${String(cur.getMonth() + 1).padStart(2, '0')}`;
+      dataPrev.push(db.transactions.filter(t => t.date.startsWith(pYearMonth)).reduce((s,t) => s + Number(t.amount), 0));
+
+      cur.setMonth(cur.getMonth() + 1);
+    }
+  } else {
+    // Numeric days (7, 14, 30, 90, 180, 365, 730)
+    const days = typeof period === 'number' ? period : 7;
+    currentRevPeriod = days;
+
+    if (days >= 180) {
+      // Group by months for 6 months, 1 year, 2 years
+      const months = Math.ceil(days / 30);
+      for (let i = months - 1; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const monthPrefix = toLocalDateStr(d).slice(0, 7);
+        labels.push(d.toLocaleDateString('en-GB', { month:'short', year:'2-digit' }));
+        dataCurrent.push(db.transactions.filter(t => t.date.startsWith(monthPrefix)).reduce((s,t) => s + Number(t.amount), 0));
+
+        // Prior year equivalent
+        const pYearMonth = `${d.getFullYear() - 1}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+        dataPrev.push(db.transactions.filter(t => t.date.startsWith(pYearMonth)).reduce((s,t) => s + Number(t.amount), 0));
+      }
+    } else if (days > 30) {
+      // Group by weeks for 90 days (3 months)
+      const weeks = Math.ceil(days / 7);
+      for (let i = weeks - 1; i >= 0; i--) {
+        const wEnd = new Date(now); wEnd.setDate(wEnd.getDate() - (i * 7));
+        const wStart = new Date(wEnd); wStart.setDate(wStart.getDate() - 6);
+        const s1 = toLocalDateStr(wStart);
+        const s2 = toLocalDateStr(wEnd);
+        labels.push(`${wStart.toLocaleDateString('en-GB', { day:'numeric', month:'short' })}`);
+        dataCurrent.push(db.transactions.filter(t => t.date >= s1 && t.date <= s2).reduce((s,t) => s + Number(t.amount), 0));
+
+        // Prior equivalent
+        const p1 = new Date(wStart); p1.setDate(p1.getDate() - days);
+        const p2 = new Date(wEnd); p2.setDate(p2.getDate() - days);
+        const ps1 = toLocalDateStr(p1);
+        const ps2 = toLocalDateStr(p2);
+        dataPrev.push(db.transactions.filter(t => t.date >= ps1 && t.date <= ps2).reduce((s,t) => s + Number(t.amount), 0));
+      }
+    } else {
+      // Daily points for 7, 14, 30 days
+      for (let i = days - 1; i >= 0; i--) {
+        const d = new Date(); d.setDate(d.getDate() - i);
+        const ds = toLocalDateStr(d);
+        labels.push(d.toLocaleDateString('en-GB', { day:'numeric', month:'short' }));
+        dataCurrent.push(db.transactions.filter(t => t.date === ds).reduce((s,t) => s + Number(t.amount), 0));
+
+        const dp = new Date(d); dp.setDate(dp.getDate() - days);
+        const dsp = toLocalDateStr(dp);
+        dataPrev.push(db.transactions.filter(t => t.date === dsp).reduce((s,t) => s + Number(t.amount), 0));
+      }
+    }
   }
 
   const canvas = document.getElementById('revenueChart');
@@ -3262,7 +3454,7 @@ function buildRevenueChart(days) {
           pointBackgroundColor: tc.primary,
           pointBorderColor: '#ffffff',
           pointBorderWidth: 2,
-          pointRadius: 4,
+          pointRadius: labels.length > 20 ? 0 : 4,
           pointHoverRadius: 6
         },
         { 
@@ -3301,7 +3493,7 @@ function buildRevenueChart(days) {
       scales: {
         x: { 
           grid: { display: false }, 
-          ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11 } } 
+          ticks: { color: '#64748b', font: { family: 'Plus Jakarta Sans', size: 11 }, maxRotation: 45 } 
         },
         y: { 
           grid: { color: tc.grid }, 
@@ -3315,6 +3507,335 @@ function buildRevenueChart(days) {
     }
   });
 }
+
+// ── METRIC CARD DRILL-DOWN ANALYTICS INSPECTOR ─────────────────
+let drilldownChart = null;
+
+function closeMetricDrilldown() {
+  const modal = document.getElementById('metric-drilldown-modal');
+  if (modal) modal.style.display = 'none';
+  if (drilldownChart) { drilldownChart.destroy(); drilldownChart = null; }
+}
+
+function openMetricDrilldown(type) {
+  const modal = document.getElementById('metric-drilldown-modal');
+  if (!modal) return;
+  modal.style.display = 'flex';
+
+  const iconBox = document.getElementById('drill-icon-box');
+  const catTag = document.getElementById('drill-category-tag');
+  const titleEl = document.getElementById('drill-title');
+  const statsGrid = document.getElementById('drill-stats-grid');
+  const chartTitle = document.getElementById('drill-chart-title');
+  const chartSub = document.getElementById('drill-chart-sub');
+  const detailsBox = document.getElementById('drill-details-container');
+
+  const canvas = document.getElementById('drilldownChart');
+  const ctx = canvas.getContext('2d');
+  if (drilldownChart) { drilldownChart.destroy(); drilldownChart = null; }
+
+  const totalAmt = db.transactions.reduce((s,t) => s + Number(t.amount), 0);
+  const totalCount = db.transactions.length;
+  const now = new Date();
+  const todayStr = toLocalDateStr(now);
+  const todayTx = db.transactions.filter(t => t.date === todayStr);
+  const todayAmt = todayTx.reduce((s,t) => s + Number(t.amount), 0);
+  const uniqueNums = new Set(db.transactions.map(t => t.phone)).size;
+  const atv = totalCount > 0 ? Math.round(totalAmt / totalCount) : 0;
+
+  if (type === 'total') {
+    // 1. TOTAL REVENUE: Monthly Income Bar Graph
+    iconBox.className = 'metric-icon-square icon-purple';
+    iconBox.innerHTML = '$';
+    catTag.textContent = 'Revenue Intelligence';
+    titleEl.textContent = 'Total Income & Monthly Revenue Breakdown';
+    chartTitle.textContent = 'Monthly Income Bar Graph (KES)';
+    chartSub.textContent = 'Income volume grouped by month';
+
+    // Group transactions by month
+    const monthsMap = {};
+    db.transactions.forEach(t => {
+      if (!t.date) return;
+      const m = t.date.slice(0, 7);
+      monthsMap[m] = (monthsMap[m] || 0) + Number(t.amount);
+    });
+    const sortedMonths = Object.keys(monthsMap).sort();
+    const monthLabels = sortedMonths.map(m => {
+      const parts = m.split('-');
+      const d = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, 1);
+      return d.toLocaleDateString('en-GB', { month:'short', year:'2-digit' });
+    });
+    const monthData = sortedMonths.map(m => monthsMap[m]);
+
+    // Highest day
+    const dayMap = {};
+    db.transactions.forEach(t => { if (t.date) dayMap[t.date] = (dayMap[t.date] || 0) + Number(t.amount); });
+    let maxDay = '—', maxDayVal = 0;
+    Object.entries(dayMap).forEach(([d, val]) => { if (val > maxDayVal) { maxDayVal = val; maxDay = d; } });
+
+    statsGrid.innerHTML = `
+      <div class="wh-info-cell"><div class="wh-info-label">Gross Revenue</div><div class="wh-info-value green">KES ${totalAmt.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Total Transactions</div><div class="wh-info-value">${totalCount.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Peak Earning Day</div><div class="wh-info-value" style="font-size:1rem;color:var(--neon-gold);">KES ${maxDayVal.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Active Months</div><div class="wh-info-value">${sortedMonths.length}</div></div>
+    `;
+
+    drilldownChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: monthLabels.length ? monthLabels : ['No Data'],
+        datasets: [{
+          label: 'Monthly Income',
+          data: monthData.length ? monthData : [0],
+          backgroundColor: 'rgba(139, 92, 246, 0.75)',
+          hoverBackgroundColor: '#a855f7',
+          borderRadius: 8,
+          borderSkipped: false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8', callback: v => 'KES ' + v.toLocaleString() } }
+        }
+      }
+    });
+
+    detailsBox.innerHTML = `
+      <div style="font-size:0.85rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">Monthly Revenue Table</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr><th style="padding:10px 14px;">Month</th><th style="padding:10px 14px;">Income (KES)</th><th style="padding:10px 14px;">Orders Count</th><th style="padding:10px 14px;">Avg Ticket</th></tr></thead>
+        <tbody>
+          ${sortedMonths.slice(-6).reverse().map(m => {
+            const txs = db.transactions.filter(t => t.date && t.date.startsWith(m));
+            const sum = txs.reduce((s,t) => s + Number(t.amount), 0);
+            return `<tr><td style="padding:10px 14px;"><strong>${m}</strong></td><td style="padding:10px 14px;color:var(--neon-green);font-weight:700;">KES ${sum.toLocaleString()}</td><td style="padding:10px 14px;">${txs.length}</td><td style="padding:10px 14px;">KES ${txs.length ? Math.round(sum/txs.length) : 0}</td></tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+
+  } else if (type === 'today') {
+    // 2. TODAY'S REVENUE: Hourly Breakdown & Orders List
+    iconBox.className = 'metric-icon-square icon-blue';
+    iconBox.innerHTML = '<i data-lucide="shopping-bag" style="width:20px;height:20px;"></i>';
+    catTag.textContent = 'Today\\'s Live Performance';
+    titleEl.textContent = "Today\\'s Revenue & Hourly Order Flow";
+    chartTitle.textContent = "Today\\'s Hourly Income (KES)";
+    chartSub.textContent = 'Payment volume from 00:00 to 23:00 today';
+
+    // 24 Hour Distribution
+    const hours = Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0'));
+    const hourlyIncome = Array(24).fill(0);
+    const hourlyOrders = Array(24).fill(0);
+
+    todayTx.forEach(t => {
+      let h = 12;
+      if (t.time) {
+        const parts = t.time.split(':');
+        h = parseInt(parts[0], 10) || 0;
+      }
+      if (h >= 0 && h < 24) {
+        hourlyIncome[h] += Number(t.amount);
+        hourlyOrders[h]++;
+      }
+    });
+
+    statsGrid.innerHTML = `
+      <div class="wh-info-cell"><div class="wh-info-label">Today\\'s Total</div><div class="wh-info-value green">KES ${todayAmt.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Today\\'s Orders</div><div class="wh-info-value">${todayTx.length}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Avg Order Today</div><div class="wh-info-value">KES ${todayTx.length ? Math.round(todayAmt/todayTx.length) : 0}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Date</div><div class="wh-info-value" style="font-size:0.95rem;">${todayStr}</div></div>
+    `;
+
+    drilldownChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: hours.map(h => `${h}:00`),
+        datasets: [{
+          label: 'Hourly Income (KES)',
+          data: hourlyIncome,
+          backgroundColor: 'rgba(59, 130, 246, 0.8)',
+          hoverBackgroundColor: '#3b82f6',
+          borderRadius: 6
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#94a3b8', maxRotation: 45 } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8', callback: v => 'KES ' + v } }
+        }
+      }
+    });
+
+    detailsBox.innerHTML = `
+      <div style="font-size:0.85rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">Today\\'s Transactions (${todayTx.length})</div>
+      <div style="max-height:180px;overflow-y:auto;border:1px solid var(--border-glass);border-radius:12px;">
+        <table style="width:100%;border-collapse:collapse;">
+          <thead><tr><th style="padding:10px 14px;">Time</th><th style="padding:10px 14px;">Name / Phone</th><th style="padding:10px 14px;">Package</th><th style="padding:10px 14px;">M-Pesa</th><th style="padding:10px 14px;">Amount</th></tr></thead>
+          <tbody>
+            ${todayTx.length ? todayTx.map(t => `
+              <tr>
+                <td style="padding:8px 14px;color:var(--text-dim);font-size:0.82rem;">${t.time || '—'}</td>
+                <td style="padding:8px 14px;">${payerCell(t)}</td>
+                <td style="padding:8px 14px;"><span class="badge ${pkgBadge(t.package)}">${t.package || '—'}</span></td>
+                <td style="padding:8px 14px;"><span class="mpesa-code">${t.mpesa}</span></td>
+                <td style="padding:8px 14px;color:var(--neon-green);font-weight:700;">KES ${Number(t.amount).toLocaleString()}</td>
+              </tr>
+            `).join('') : '<tr><td colspan="5" style="text-align:center;padding:24px;color:var(--text-dim);">No transactions recorded today yet</td></tr>'}
+          </tbody>
+        </table>
+      </div>
+    `;
+
+  } else if (type === 'subs') {
+    // 3. SUBSCRIBERS: Subscriber Activity & Top VIP Customers
+    iconBox.className = 'metric-icon-square icon-green';
+    iconBox.innerHTML = '<i data-lucide="users" style="width:20px;height:20px;"></i>';
+    catTag.textContent = 'Subscriber Intelligence';
+    titleEl.textContent = 'Subscriber Growth & Customer Loyalty Breakdown';
+    chartTitle.textContent = 'Payment Frequency Distribution';
+    chartSub.textContent = 'Single purchase vs Repeat loyalty tiers';
+
+    const phoneStats = {};
+    db.transactions.forEach(t => {
+      if (!t.phone) return;
+      if (!phoneStats[t.phone]) phoneStats[t.phone] = { phone: t.phone, name: t.name, total: 0, count: 0, lastDate: t.date };
+      phoneStats[t.phone].total += Number(t.amount);
+      phoneStats[t.phone].count++;
+      if (t.date > phoneStats[t.phone].lastDate) phoneStats[t.phone].lastDate = t.date;
+    });
+
+    const subList = Object.values(phoneStats);
+    const once = subList.filter(s => s.count === 1).length;
+    const twice = subList.filter(s => s.count === 2).length;
+    const loyal = subList.filter(s => s.count >= 3 && s.count <= 5).length;
+    const vip = subList.filter(s => s.count > 5).length;
+    const repeaters = subList.filter(s => s.count > 1).length;
+    const repeatRate = uniqueNums > 0 ? Math.round((repeaters / uniqueNums) * 100) : 0;
+
+    statsGrid.innerHTML = `
+      <div class="wh-info-cell"><div class="wh-info-label">Unique Members</div><div class="wh-info-value">${uniqueNums.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Repeat Rate</div><div class="wh-info-value green">${repeatRate}%</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">VIPs (>5 payments)</div><div class="wh-info-value" style="color:var(--neon-purple);">${vip}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Average LTV</div><div class="wh-info-value">KES ${uniqueNums > 0 ? Math.round(totalAmt/uniqueNums) : 0}</div></div>
+    `;
+
+    drilldownChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['1 Payment (New)', '2 Payments', '3-5 Payments (Loyal)', '5+ Payments (VIP)'],
+        datasets: [{
+          label: 'Customer Count',
+          data: [once, twice, loyal, vip],
+          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#a855f7'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8' } }
+        }
+      }
+    });
+
+    const topSpenders = [...subList].sort((a, b) => b.total - a.total).slice(0, 6);
+    detailsBox.innerHTML = `
+      <div style="font-size:0.85rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">Top High-Value Spenders</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr><th style="padding:10px 14px;">Member</th><th style="padding:10px 14px;">Total Spent (KES)</th><th style="padding:10px 14px;">Orders Count</th><th style="padding:10px 14px;">Last Active</th></tr></thead>
+        <tbody>
+          ${topSpenders.map((s, idx) => `
+            <tr>
+              <td style="padding:8px 14px;"><strong>#${idx+1}</strong> ${subscriberLabel(s)}</td>
+              <td style="padding:8px 14px;color:var(--neon-green);font-weight:700;">KES ${s.total.toLocaleString()}</td>
+              <td style="padding:8px 14px;">${s.count} orders</td>
+              <td style="padding:8px 14px;color:var(--text-dim);font-size:0.82rem;">${s.lastDate || '—'}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    `;
+
+  } else if (type === 'atv') {
+    // 4. AVG TRANSACTION & TICKET SIZES
+    iconBox.className = 'metric-icon-square icon-orange';
+    iconBox.innerHTML = '<i data-lucide="trending-up" style="width:20px;height:20px;"></i>';
+    catTag.textContent = 'Pricing & Ticket Analytics';
+    titleEl.textContent = 'Average Order Value & Package Price Points';
+    chartTitle.textContent = 'Revenue Share by Package Tier';
+    chartSub.textContent = 'Comparison of sales revenue across tiers';
+
+    const pkgRevenue = {};
+    PACKAGES.forEach(p => { pkgRevenue[p] = 0; });
+    db.transactions.forEach(t => { if (pkgRevenue[t.package] !== undefined) pkgRevenue[t.package] += Number(t.amount); });
+
+    statsGrid.innerHTML = `
+      <div class="wh-info-cell"><div class="wh-info-label">Average Order Value</div><div class="wh-info-value green">KES ${atv.toLocaleString()}</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Median Package Price</div><div class="wh-info-value">KES 50</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Highest Tier</div><div class="wh-info-value" style="color:var(--neon-gold);">KES 250</div></div>
+      <div class="wh-info-cell"><div class="wh-info-label">Lowest Tier</div><div class="wh-info-value">KES 20</div></div>
+    `;
+
+    drilldownChart = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: PACKAGES,
+        datasets: [{
+          label: 'Total Revenue (KES)',
+          data: PACKAGES.map(p => pkgRevenue[p] || 0),
+          backgroundColor: PKG_COLORS,
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#94a3b8' } },
+          y: { grid: { color: 'rgba(255,255,255,0.06)' }, ticks: { color: '#94a3b8', callback: v => 'KES ' + v.toLocaleString() } }
+        }
+      }
+    });
+
+    detailsBox.innerHTML = `
+      <div style="font-size:0.85rem;font-weight:700;color:var(--text-main);margin-bottom:10px;">Package Pricing & Performance</div>
+      <table style="width:100%;border-collapse:collapse;">
+        <thead><tr><th style="padding:10px 14px;">Package Name</th><th style="padding:10px 14px;">Standard Price</th><th style="padding:10px 14px;">Gross Revenue</th><th style="padding:10px 14px;">Share</th></tr></thead>
+        <tbody>
+          ${PACKAGES.map(pkg => {
+            const rev = pkgRevenue[pkg] || 0;
+            const pct = totalAmt > 0 ? ((rev / totalAmt) * 100).toFixed(1) : 0;
+            return `<tr>
+              <td style="padding:8px 14px;"><strong>${pkg}</strong></td>
+              <td style="padding:8px 14px;color:var(--neon-gold);">KES ${{ Daily:250, 'Super MultiBet':50, 'MidWeek Jackpot':40, 'Mega Jackpot':80, 'Half Time Full Time':20 }[pkg] || '—'}</td>
+              <td style="padding:8px 14px;color:var(--neon-green);font-weight:700;">KES ${rev.toLocaleString()}</td>
+              <td style="padding:8px 14px;">${pct}%</td>
+            </tr>`;
+          }).join('')}
+        </tbody>
+      </table>
+    `;
+  }
+
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+// Close drilldown modal when clicking backdrop
+document.getElementById('metric-drilldown-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeMetricDrilldown();
+});
 
 function buildPackageChart() {
   const amounts = {}; 
