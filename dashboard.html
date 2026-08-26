@@ -2979,7 +2979,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           <span id="league-helper-badge" style="font-size:0.72rem;color:var(--neon-green, #00c853);font-weight:600;">⚡ Teams auto-loaded below</span>
         </label>
         <div style="display:flex;flex-direction:column;gap:8px;">
-          <select class="filter-select" id="tip-league-select" style="width:100%;min-height:42px;" onchange="onLeagueSelectChange(this.value)">
+          <select class="filter-select" id="tip-league-select" style="width:100%;min-height:42px;" onchange="onLeagueSelectChange(this)">
             <option value="Premier League" selected>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League (EPL)</option>
             <option value="La Liga">🇪🇸 La Liga (Spain)</option>
             <option value="Serie A">🇮🇹 Serie A (Italy)</option>
@@ -5242,29 +5242,27 @@ const LEAGUES_DATA = {
   ]
 };
 
-function onLeagueSelectChange(val) {
+function onLeagueSelectChange(selOrVal) {
+  // Accept either the select element or a raw value string
+  const val = (selOrVal && typeof selOrVal === 'object') ? selOrVal.value : selOrVal;
   const inpLeague = document.getElementById('tip-league');
   const helperBadge = document.getElementById('league-helper-badge');
+
   if (val && val !== 'custom') {
-    if (inpLeague) {
-      inpLeague.value = val;
-      inpLeague.style.display = 'none';
-    }
+    if (inpLeague) { inpLeague.value = val; inpLeague.style.display = 'none'; }
     if (helperBadge) helperBadge.textContent = '⚡ Teams auto-loaded below';
   } else if (val === 'custom') {
-    if (inpLeague) {
-      inpLeague.value = '';
-      inpLeague.style.display = 'block';
-      inpLeague.focus();
-    }
-    if (helperBadge) helperBadge.textContent = '✏ Enter custom league';
+    if (inpLeague) { inpLeague.value = ''; inpLeague.style.display = 'block'; inpLeague.focus(); }
+    if (helperBadge) helperBadge.textContent = '✏ Enter custom league name below';
   } else {
-    if (inpLeague) {
-      inpLeague.value = '';
-      inpLeague.style.display = 'none';
-    }
+    if (inpLeague) { inpLeague.value = ''; inpLeague.style.display = 'none'; }
     if (helperBadge) helperBadge.textContent = 'Please choose a league';
   }
+
+  // Force sync the select element's displayed value
+  const leagueSel = document.getElementById('tip-league-select');
+  if (leagueSel && val) leagueSel.value = val;
+
   populateTeamSelects(val);
 }
 
@@ -5397,15 +5395,21 @@ function openTipModal(id) {
   const errEl = document.getElementById('tip-modal-error');
   errEl.style.display = 'none';
 
+  // Re-wire the league select listener every time the modal opens (defensive bind)
+  const leagueDropdown = document.getElementById('tip-league-select');
+  if (leagueDropdown) {
+    leagueDropdown.onchange = function() { onLeagueSelectChange(this); };
+  }
+
   if (!id) {
-    // New tip: default to Premier League and populate EPL teams right away!
+    // New tip: default to Premier League and populate EPL clubs right away
     document.getElementById('tip-modal-title').textContent = 'New Prediction';
     document.getElementById('tip-edit-id').value = '';
-    const lSel = document.getElementById('tip-league-select');
-    if (lSel) lSel.value = 'Premier League';
+    if (leagueDropdown) leagueDropdown.value = 'Premier League';
     const lInp = document.getElementById('tip-league');
     if (lInp) { lInp.value = 'Premier League'; lInp.style.display = 'none'; }
-    
+
+    // Explicitly populate Premier League clubs
     populateTeamSelects('Premier League', '', '');
 
     document.getElementById('tip-date').value   = new Date().toISOString().split('T')[0];
