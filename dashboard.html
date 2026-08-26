@@ -200,10 +200,15 @@ tbody td{padding:14px 20px;font-size:0.88rem;color:var(--text);vertical-align:mi
 .section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;}
 .section-title{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:2px;color:var(--white);}
 .section-tag-label{font-size:0.72rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--green);}
-.pagination{display:flex;gap:6px;justify-content:flex-end;padding:16px 20px;flex-wrap:wrap;border-top:1px solid var(--border2);background:var(--dark3);}
-.pg-btn{padding:6px 12px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;letter-spacing:0.5px;
-  background:transparent;color:var(--muted);border:1px solid var(--border);transition:all .2s;}
-.pg-btn.active,.pg-btn:hover{background:var(--green-dim);color:var(--green);border-color:var(--green);}
+button, a, select, input, .nav-item, .btn-submit, .btn-secondary, .btn-danger, .pg-btn, .menu-toggle {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.pagination{display:flex;gap:6px;justify-content:center;align-items:center;padding:16px 20px;flex-wrap:wrap;border-top:1px solid var(--border2);background:var(--dark3);touch-action:manipulation;}
+.pg-btn{min-height:36px;min-width:36px;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:0.85rem;font-weight:600;letter-spacing:0.5px;
+  background:var(--dark2);color:var(--text);border:1px solid var(--border);transition:all .2s;display:inline-flex;align-items:center;justify-content:center;touch-action:manipulation;-webkit-tap-highlight-color:transparent;}
+.pg-btn.active{background:var(--green);color:var(--dark);border-color:var(--green);font-weight:700;box-shadow:0 0 10px rgba(16,185,129,0.3);}
+.pg-btn:hover:not(:disabled){background:var(--green-dim);color:var(--green);border-color:var(--green);}
 
 /* WEBHOOK PAGE */
 .webhook-status-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:26px;margin-bottom:22px;
@@ -401,10 +406,10 @@ tbody td{padding:14px 20px;font-size:0.88rem;color:var(--text);vertical-align:mi
 
     <!-- SIDEBAR -->
     <div class="sidebar">
-      <div class="sidebar-logo">
+      <a href="/" class="sidebar-logo" title="Back to Sokastar Main Site" style="text-decoration:none;cursor:pointer;display:flex;align-items:center;gap:12px;">
         <div class="logo-star"></div>
         <div class="sidebar-logo-text">Soka<span>star</span></div>
-      </div>
+      </a>
       <div class="sidebar-admin-tag">Admin Panel</div>
       <nav class="sidebar-nav">
         <button class="nav-item active" onclick="showPage('dashboard',this)">
@@ -425,6 +430,9 @@ tbody td{padding:14px 20px;font-size:0.88rem;color:var(--text);vertical-align:mi
         <button class="nav-item" id="nav-tips" onclick="showPage('tips',this)">
           <i data-lucide="trending-up" class="nav-icon"></i><span>Tips Manager</span>
         </button>
+        <a href="/" class="nav-item" style="text-decoration:none;color:var(--text);display:flex;align-items:center;" target="_blank" title="Open Main Website in new tab">
+          <i data-lucide="external-link" class="nav-icon"></i><span>View Website ↗</span>
+        </a>
         <button class="nav-item" id="nav-webhook" onclick="showPage('webhook',this)" style="display:none;">
           <i data-lucide="settings" class="nav-icon"></i><span>Daraja API</span>
         </button>
@@ -1640,15 +1648,35 @@ function renderTransactions() {
   const pg = document.getElementById('tx-pagination');
   pg.innerHTML = '';
   if (pages > 1) {
-    let html = `<button class="pg-btn" ${txPage <= 1 ? 'disabled style="opacity:0.4;cursor:default;"' : ''} onclick="txPage--;renderTransactions()">Prev</button>`;
-    const startP = Math.max(1, txPage - 2);
-    const endP = Math.min(pages, txPage + 2);
-    for (let p = startP; p <= endP; p++) {
-      html += `<button class="pg-btn ${p===txPage?'active':''}" onclick="txPage=${p};renderTransactions()">${p}</button>`;
+    let html = `<div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:center;width:100%;padding:4px 0;">`;
+    
+    // First & Prev buttons
+    html += `<button class="pg-btn" ${txPage <= 1 ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''} onclick="txPage=1;renderTransactions();" title="First Page">« First</button>`;
+    html += `<button class="pg-btn" ${txPage <= 1 ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''} onclick="txPage--;renderTransactions();" title="Previous Page">‹ Prev</button>`;
+
+    // Render every page number button so user can click any page
+    for (let p = 1; p <= pages; p++) {
+      html += `<button class="pg-btn ${p === txPage ? 'active' : ''}" onclick="txPage=${p};renderTransactions();">${p}</button>`;
     }
-    html += `<button class="pg-btn" ${txPage >= pages ? 'disabled style="opacity:0.4;cursor:default;"' : ''} onclick="txPage++;renderTransactions()">Next</button>`;
-    html += `<span style="margin-left:12px;font-size:0.78rem;color:var(--muted);align-self:center;">Page ${txPage} of ${pages} (${total} record${total===1?'':'s'})</span>`;
+
+    // Next & Last buttons
+    html += `<button class="pg-btn" ${txPage >= pages ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''} onclick="txPage++;renderTransactions();" title="Next Page">Next ›</button>`;
+    html += `<button class="pg-btn" ${txPage >= pages ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''} onclick="txPage=${pages};renderTransactions();" title="Last Page">Last »</button>`;
+
+    // Quick jump dropdown + summary info
+    html += `
+      <div style="display:inline-flex;align-items:center;gap:8px;margin-left:8px;flex-wrap:wrap;justify-content:center;">
+        <span style="font-size:0.78rem;color:var(--muted);">Jump to:</span>
+        <select class="filter-select" style="padding:4px 8px;font-size:0.8rem;height:36px;cursor:pointer;" onchange="txPage=parseInt(this.value,10);renderTransactions();">
+          ${Array.from({length: pages}, (_, idx) => `<option value="${idx + 1}" ${idx + 1 === txPage ? 'selected' : ''}>Page ${idx + 1} of ${pages}</option>`).join('')}
+        </select>
+        <span style="font-size:0.78rem;color:var(--green);font-weight:600;white-space:nowrap;">(Showing ${(txPage-1)*TX_PER_PAGE+1}–${Math.min(txPage*TX_PER_PAGE, total)} of ${total.toLocaleString()} records)</span>
+      </div>`;
+
+    html += `</div>`;
     pg.innerHTML = html;
+  } else if (total > 0) {
+    pg.innerHTML = `<div style="width:100%;text-align:center;font-size:0.82rem;color:var(--muted);padding:8px 0;">Showing all ${total.toLocaleString()} transactions (1 page)</div>`;
   }
 }
 
