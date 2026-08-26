@@ -1192,6 +1192,83 @@ button, a, select, input, .nav-item, .btn-submit, .btn-secondary, .btn-danger, .
   box-shadow: 0 0 10px rgba(99, 102, 241, 0.25);
 }
 
+/* ── HORIZONTAL SCROLL TABLES (Mobile) ─────────────────────── */
+.table-responsive {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  width: 100%;
+}
+
+/* Styled scrollbar for table wrapper */
+.table-responsive::-webkit-scrollbar {
+  height: 5px;
+}
+.table-responsive::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 10px;
+}
+.table-responsive::-webkit-scrollbar-thumb {
+  background: var(--neon-indigo, #6366f1);
+  border-radius: 10px;
+  opacity: 0.6;
+}
+.table-responsive::-webkit-scrollbar-thumb:hover {
+  background: var(--neon-green, #00c853);
+}
+
+/* Prevent tables from collapsing inside scroll wrapper */
+.table-responsive table {
+  min-width: 700px;
+}
+
+/* Prevent cell text from line-wrapping and causing layout issues */
+.table-responsive thead th,
+.table-responsive tbody td {
+  white-space: nowrap;
+}
+
+/* Drilldown modal tables also scrollable */
+#drill-details-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+#drill-details-container table {
+  min-width: 500px;
+}
+#drill-details-container thead th,
+#drill-details-container tbody td {
+  white-space: nowrap;
+}
+#drill-details-container::-webkit-scrollbar { height: 5px; }
+#drill-details-container::-webkit-scrollbar-track { background: rgba(255,255,255,0.04); border-radius: 10px; }
+#drill-details-container::-webkit-scrollbar-thumb { background: var(--neon-indigo,#6366f1); border-radius: 10px; }
+
+/* Drill-down modal stats grid – responsive */
+.drill-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin: 20px 0;
+}
+
+/* Scroll hint label shown below tables on mobile */
+.table-scroll-hint {
+  display: none;
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--text-dim, #64748b);
+  padding: 6px 0 2px;
+  letter-spacing: 0.5px;
+}
+
+@media (max-width: 768px) {
+  .table-scroll-hint { display: block; }
+  .drill-stats-grid { grid-template-columns: repeat(2, 1fr); }
+  /* Wider min-width for the many-column transactions table */
+  .table-responsive table { min-width: 680px; }
+  #drill-details-container table { min-width: 460px; }
+}
+
 table { width: 100%; border-collapse: collapse; }
 
 thead th {
@@ -2352,6 +2429,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
               <tbody id="tx-tbody"><tr><td colspan="10" class="empty-state">No transactions recorded yet</td></tr></tbody>
             </table>
           </div>
+          <div class="table-scroll-hint">← Swipe to see more columns →</div>
           <div class="pagination" id="tx-pagination"></div>
         </div>
       </div>
@@ -2390,6 +2468,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
               <tbody id="sub-tbody"><tr><td colspan="7" class="empty-state">No subscribers yet</td></tr></tbody>
             </table>
           </div>
+          <div class="table-scroll-hint">← Swipe to see more columns →</div>
         </div>
       </div>
 
@@ -2820,6 +2899,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
               </tbody>
             </table>
           </div>
+          <div class="table-scroll-hint">← Swipe to see more columns →</div>
         </div>
       </div>
 
@@ -2828,8 +2908,8 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
 </div><!-- end admin-screen -->
 
 <!-- METRIC DRILLDOWN MODAL -->
-<div id="metric-drilldown-modal" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,0.78);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--bg-sidebar);border:1px solid var(--border-glass);border-radius:20px;width:100%;max-width:800px;max-height:90vh;overflow-y:auto;padding:28px 32px;position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.6);">
+<div id="metric-drilldown-modal" style="display:none;position:fixed;inset:0;z-index:2100;background:rgba(0,0,0,0.78);backdrop-filter:blur(10px);align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div style="background:var(--bg-sidebar);border:1px solid var(--border-glass);border-radius:20px;width:100%;max-width:800px;max-height:90vh;overflow-y:auto;overflow-x:hidden;padding:24px 20px;position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.6);box-sizing:border-box;">
     <button onclick="closeMetricDrilldown()" style="position:absolute;top:20px;right:20px;background:rgba(255,255,255,0.06);border:1px solid var(--border-glass);color:var(--text-main);width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:1.2rem;line-height:1;transition:all .2s;">&times;</button>
     
     <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px;">
@@ -2841,7 +2921,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
     </div>
 
     <!-- Quick stats grid -->
-    <div style="display:grid;grid-template-columns:repeat(4, 1fr);gap:12px;margin:20px 0;" id="drill-stats-grid">
+    <div class="drill-stats-grid" id="drill-stats-grid">
       <!-- Injected by JS -->
     </div>
 
