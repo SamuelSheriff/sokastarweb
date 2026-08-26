@@ -2977,18 +2977,32 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
         </div>
       </div>
 
-      <!-- Home Team with League Datalist -->
+      <!-- Home Team Dropdown -->
       <div class="form-group">
-        <label class="form-label">Home Team *</label>
-        <input type="text" class="form-input" id="tip-home" list="home-team-datalist" placeholder="Select or type Home Team" autocomplete="off">
-        <datalist id="home-team-datalist"></datalist>
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Home Team *</span>
+          <span id="home-team-badge" style="font-size:0.7rem;color:var(--text-dim);">Pick from league</span>
+        </label>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <select class="filter-select" id="tip-home-select" style="width:100%;" onchange="onTeamSelectChange('home', this.value)">
+            <option value="">-- Choose League First --</option>
+          </select>
+          <input type="text" class="form-input" id="tip-home" placeholder="Enter custom home team..." style="display:none;">
+        </div>
       </div>
 
-      <!-- Away Team with League Datalist -->
+      <!-- Away Team Dropdown -->
       <div class="form-group">
-        <label class="form-label">Away Team *</label>
-        <input type="text" class="form-input" id="tip-away" list="away-team-datalist" placeholder="Select or type Away Team" autocomplete="off">
-        <datalist id="away-team-datalist"></datalist>
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>Away Team *</span>
+          <span id="away-team-badge" style="font-size:0.7rem;color:var(--text-dim);">Pick from league</span>
+        </label>
+        <div style="display:flex;flex-direction:column;gap:6px;">
+          <select class="filter-select" id="tip-away-select" style="width:100%;" onchange="onTeamSelectChange('away', this.value)">
+            <option value="">-- Choose League First --</option>
+          </select>
+          <input type="text" class="form-input" id="tip-away" placeholder="Enter custom away team..." style="display:none;">
+        </div>
       </div>
 
       <div class="form-group">
@@ -5174,34 +5188,125 @@ const LEAGUES_DATA = {
 function onLeagueSelectChange(val) {
   const inpLeague = document.getElementById('tip-league');
   if (val && val !== 'custom') {
-    if (inpLeague) inpLeague.value = val;
+    if (inpLeague) {
+      inpLeague.value = val;
+      inpLeague.style.display = 'none';
+    }
   } else if (val === 'custom') {
     if (inpLeague) {
       inpLeague.value = '';
+      inpLeague.style.display = 'block';
       inpLeague.focus();
     }
+  } else {
+    if (inpLeague) {
+      inpLeague.value = '';
+      inpLeague.style.display = 'none';
+    }
   }
-  populateTeamDataLists(val);
+  populateTeamSelects(val);
 }
 
-function populateTeamDataLists(leagueName) {
-  const homeDl = document.getElementById('home-team-datalist');
-  const awayDl = document.getElementById('away-team-datalist');
-  if (!homeDl || !awayDl) return;
+function populateTeamSelects(leagueName, selectedHome = '', selectedAway = '') {
+  const homeSel = document.getElementById('tip-home-select');
+  const awaySel = document.getElementById('tip-away-select');
+  const homeInp = document.getElementById('tip-home');
+  const awayInp = document.getElementById('tip-away');
+  const homeBadge = document.getElementById('home-team-badge');
+  const awayBadge = document.getElementById('away-team-badge');
+  if (!homeSel || !awaySel) return;
 
-  let teams = [];
-  if (leagueName && LEAGUES_DATA[leagueName]) {
-    teams = LEAGUES_DATA[leagueName];
-  } else {
-    // Collect all teams from all leagues as fallback options
-    const all = new Set();
-    Object.values(LEAGUES_DATA).forEach(list => list.forEach(t => all.add(t)));
-    teams = [...all].sort();
+  const isCustomLeague = !leagueName || leagueName === 'custom' || !LEAGUES_DATA[leagueName];
+  
+  if (isCustomLeague) {
+    if (homeBadge) homeBadge.textContent = 'Custom team entry';
+    if (awayBadge) awayBadge.textContent = 'Custom team entry';
+
+    const allTeams = new Set();
+    Object.values(LEAGUES_DATA).forEach(list => list.forEach(t => allTeams.add(t)));
+    const sortedAll = [...allTeams].sort();
+    
+    let html = `<option value="">-- Select Team (or type below) --</option>`;
+    sortedAll.forEach(t => { html += `<option value="${t}">${t}</option>`; });
+    html += `<option value="__custom__">✏ Type other custom team...</option>`;
+    
+    homeSel.innerHTML = html;
+    awaySel.innerHTML = html;
+
+    if (homeInp) homeInp.style.display = 'block';
+    if (awayInp) awayInp.style.display = 'block';
+
+    if (selectedHome) {
+      homeSel.value = sortedAll.includes(selectedHome) ? selectedHome : '__custom__';
+      if (homeInp) homeInp.value = selectedHome;
+    }
+    if (selectedAway) {
+      awaySel.value = sortedAll.includes(selectedAway) ? selectedAway : '__custom__';
+      if (awayInp) awayInp.value = selectedAway;
+    }
+    return;
   }
 
-  const optionsHtml = teams.map(t => `<option value="${t}">`).join('');
-  homeDl.innerHTML = optionsHtml;
-  awayDl.innerHTML = optionsHtml;
+  // Known Top League: populate dropdown with clubs of this league
+  const teams = LEAGUES_DATA[leagueName] || [];
+  if (homeBadge) homeBadge.textContent = `${teams.length} ${leagueName} clubs`;
+  if (awayBadge) awayBadge.textContent = `${teams.length} ${leagueName} clubs`;
+
+  let homeHtml = `<option value="">-- Select Home Team (${teams.length} clubs) --</option>`;
+  let awayHtml = `<option value="">-- Select Away Team (${teams.length} clubs) --</option>`;
+
+  teams.forEach(t => {
+    homeHtml += `<option value="${t}">${t}</option>`;
+    awayHtml += `<option value="${t}">${t}</option>`;
+  });
+  homeHtml += `<option value="__custom__">✏ Type other custom team...</option>`;
+  awayHtml += `<option value="__custom__">✏ Type other custom team...</option>`;
+
+  homeSel.innerHTML = homeHtml;
+  awaySel.innerHTML = awayHtml;
+
+  // Set selected values if editing
+  if (selectedHome) {
+    if (teams.includes(selectedHome)) {
+      homeSel.value = selectedHome;
+      if (homeInp) { homeInp.value = selectedHome; homeInp.style.display = 'none'; }
+    } else {
+      homeSel.value = '__custom__';
+      if (homeInp) { homeInp.value = selectedHome; homeInp.style.display = 'block'; }
+    }
+  } else {
+    homeSel.value = '';
+    if (homeInp) { homeInp.value = ''; homeInp.style.display = 'none'; }
+  }
+
+  if (selectedAway) {
+    if (teams.includes(selectedAway)) {
+      awaySel.value = selectedAway;
+      if (awayInp) { awayInp.value = selectedAway; awayInp.style.display = 'none'; }
+    } else {
+      awaySel.value = '__custom__';
+      if (awayInp) { awayInp.value = selectedAway; awayInp.style.display = 'block'; }
+    }
+  } else {
+    awaySel.value = '';
+    if (awayInp) { awayInp.value = ''; awayInp.style.display = 'none'; }
+  }
+}
+
+function onTeamSelectChange(type, val) {
+  const inp = document.getElementById(type === 'home' ? 'tip-home' : 'tip-away');
+  if (!inp) return;
+  if (val === '__custom__') {
+    inp.style.display = 'block';
+    inp.value = '';
+    inp.focus();
+  } else if (val) {
+    inp.value = val;
+    inp.style.display = 'none';
+  } else {
+    inp.value = '';
+    inp.style.display = 'none';
+  }
 }
 
 function onPickSelectChange(val) {
@@ -5220,12 +5325,10 @@ function openTipModal(id) {
     // New tip
     document.getElementById('tip-modal-title').textContent = 'New Prediction';
     document.getElementById('tip-edit-id').value = '';
-    document.getElementById('tip-home').value   = '';
-    document.getElementById('tip-away').value   = '';
     document.getElementById('tip-league').value = '';
     const lSel = document.getElementById('tip-league-select');
     if (lSel) lSel.value = '';
-    populateTeamDataLists('');
+    populateTeamSelects('', '', '');
     document.getElementById('tip-date').value   = new Date().toISOString().split('T')[0];
     document.getElementById('tip-time').value   = '';
     document.getElementById('tip-odds').value   = '';
@@ -5243,21 +5346,19 @@ function openTipModal(id) {
   if (!tip) return;
   document.getElementById('tip-modal-title').textContent = 'Edit Prediction';
   document.getElementById('tip-edit-id').value = tip.id;
-  document.getElementById('tip-home').value    = tip.home_team || '';
-  document.getElementById('tip-away').value    = tip.away_team || '';
-  document.getElementById('tip-league').value  = tip.league    || '';
+  document.getElementById('tip-league').value  = tip.league || '';
 
   const leagueSelect = document.getElementById('tip-league-select');
   if (leagueSelect) {
     if (tip.league && LEAGUES_DATA[tip.league]) {
       leagueSelect.value = tip.league;
-      populateTeamDataLists(tip.league);
+      populateTeamSelects(tip.league, tip.home_team || '', tip.away_team || '');
     } else if (tip.league) {
       leagueSelect.value = 'custom';
-      populateTeamDataLists('');
+      populateTeamSelects('custom', tip.home_team || '', tip.away_team || '');
     } else {
       leagueSelect.value = '';
-      populateTeamDataLists('');
+      populateTeamSelects('', tip.home_team || '', tip.away_team || '');
     }
   }
 
@@ -5294,13 +5395,76 @@ async function saveTip() {
   errEl.style.display = 'none';
 
   const editId   = document.getElementById('tip-edit-id').value;
-  const homeTeam = document.getElementById('tip-home').value.trim();
-  const awayTeam = document.getElementById('tip-away').value.trim();
-  const pick     = document.getElementById('tip-pick').value.trim();
-  const tier     = document.getElementById('tip-tier').value;
+  const leagueSelect = document.getElementById('tip-league-select');
+  const leagueInput  = document.getElementById('tip-league');
+  
+  let leagueName = '';
+  if (leagueSelect && leagueSelect.value && leagueSelect.value !== 'custom') {
+    leagueName = leagueSelect.value;
+  } else if (leagueInput) {
+    leagueName = leagueInput.value.trim();
+  }
 
-  if (!homeTeam || !awayTeam || !pick || !tier) {
-    errEl.textContent = 'Home Team, Away Team, Pick and Tier are required.';
+  const homeSel = document.getElementById('tip-home-select');
+  const awaySel = document.getElementById('tip-away-select');
+  const homeInp = document.getElementById('tip-home');
+  const awayInp = document.getElementById('tip-away');
+
+  let homeTeam = (homeInp && homeInp.value.trim()) || (homeSel && homeSel.value) || '';
+  let awayTeam = (awayInp && awayInp.value.trim()) || (awaySel && awaySel.value) || '';
+  const pick   = (document.getElementById('tip-pick').value || '').trim();
+  const tier   = document.getElementById('tip-tier').value;
+
+  if (homeTeam === '__custom__') homeTeam = '';
+  if (awayTeam === '__custom__') awayTeam = '';
+
+  if (!leagueName) {
+    errEl.textContent = '❌ Please select or enter a League.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (!homeTeam) {
+    errEl.textContent = '❌ Please select a Home Team from the dropdown.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (!awayTeam) {
+    errEl.textContent = '❌ Please select an Away Team from the dropdown.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (homeTeam.trim().toLowerCase() === awayTeam.trim().toLowerCase()) {
+    errEl.textContent = `❌ Home Team and Away Team cannot be the same team (${homeTeam}).`;
+    errEl.style.display = 'block';
+    return;
+  }
+
+  // League-specific team validation for standard leagues
+  if (LEAGUES_DATA[leagueName]) {
+    const validTeams = LEAGUES_DATA[leagueName].map(t => t.toLowerCase());
+    if (!validTeams.includes(homeTeam.trim().toLowerCase())) {
+      errEl.textContent = `❌ "${homeTeam}" is not a valid team in ${leagueName}. Please select a valid team from the ${leagueName} dropdown.`;
+      errEl.style.display = 'block';
+      return;
+    }
+    if (!validTeams.includes(awayTeam.trim().toLowerCase())) {
+      errEl.textContent = `❌ "${awayTeam}" is not a valid team in ${leagueName}. Please select a valid team from the ${leagueName} dropdown.`;
+      errEl.style.display = 'block';
+      return;
+    }
+  }
+
+  if (!pick) {
+    errEl.textContent = '❌ Our Pick is required. Choose a betting market or enter a pick.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  if (!tier) {
+    errEl.textContent = '❌ Prediction Tier is required.';
     errEl.style.display = 'block';
     return;
   }
@@ -5313,7 +5477,7 @@ async function saveTip() {
   const body = {
     homeTeam,
     awayTeam,
-    league:    document.getElementById('tip-league').value.trim(),
+    league:    leagueName,
     matchDate: document.getElementById('tip-date').value,
     matchTime: document.getElementById('tip-time').value || '—',
     pick,
