@@ -2963,86 +2963,128 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
 </div>
 
 <!-- TIP MODAL -->
-<div id="tip-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.7);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;">
-  <div style="background:var(--card);border:1px solid var(--border);border-radius:16px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto;padding:32px 28px;position:relative;">
-    <button onclick="closeTipModal()" style="position:absolute;top:16px;right:16px;background:transparent;border:none;color:var(--muted);font-size:1.3rem;cursor:pointer;line-height:1;">&times;</button>
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:2px;text-transform:uppercase;color:var(--green);margin-bottom:8px;">Tip Manager</div>
-    <div style="font-size:1.2rem;font-weight:700;margin-bottom:24px;" id="tip-modal-title">New Prediction</div>
+<div id="tip-modal" style="display:none;position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,0.78);backdrop-filter:blur(8px);align-items:center;justify-content:center;padding:16px;overflow-y:auto;">
+  <div class="tip-modal-dialog" style="background:var(--bg-card, #0f172a);border:1px solid var(--border-glass, rgba(255,255,255,0.1));border-radius:18px;width:100%;max-width:580px;max-height:90vh;overflow-y:auto;padding:26px 22px;position:relative;box-shadow:0 25px 60px rgba(0,0,0,0.6);box-sizing:border-box;">
+    <button type="button" onclick="closeTipModal()" style="position:absolute;top:16px;right:16px;background:rgba(255,255,255,0.06);border:1px solid var(--border-glass, rgba(255,255,255,0.1));color:var(--text-main, #fff);width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1.2rem;cursor:pointer;line-height:1;transition:all .2s;">&times;</button>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:0.75rem;letter-spacing:2px;text-transform:uppercase;color:var(--neon-green, #00c853);margin-bottom:6px;font-weight:700;">Prediction Publisher</div>
+    <div style="font-size:1.25rem;font-weight:800;margin-bottom:18px;color:var(--text-main, #fff);" id="tip-modal-title">New Prediction</div>
 
     <input type="hidden" id="tip-edit-id">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-      <!-- League Dropdown Selector (Top of Form) -->
-      <div class="form-group" style="grid-column: span 2;">
-        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>League *</span>
-          <span style="font-size:0.72rem;color:var(--neon-green);font-weight:600;">⚡ Selecting league auto-populates teams below</span>
+    <div class="tip-modal-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      
+      <!-- League Dropdown Selector -->
+      <div class="form-group" style="grid-column: span 2; margin-bottom: 0;">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-weight:700;">Select League *</span>
+          <span id="league-helper-badge" style="font-size:0.72rem;color:var(--neon-green, #00c853);font-weight:600;">⚡ Teams auto-loaded below</span>
         </label>
-        <div style="display:flex;gap:8px;">
-          <select class="filter-select" id="tip-league-select" style="flex:1.2;" onchange="onLeagueSelectChange(this.value)">
-            <option value="">-- Select Top League --</option>
-            <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League (EPL)</option>
-            <option value="La Liga">🇪🇸 La Liga</option>
-            <option value="Serie A">🇮🇹 Serie A</option>
-            <option value="Bundesliga">🇩🇪 Bundesliga</option>
-            <option value="Ligue 1">🇫🇷 Ligue 1</option>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <select class="filter-select" id="tip-league-select" style="width:100%;min-height:42px;" onchange="onLeagueSelectChange(this.value)">
+            <option value="Premier League" selected>🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League (EPL)</option>
+            <option value="La Liga">🇪🇸 La Liga (Spain)</option>
+            <option value="Serie A">🇮🇹 Serie A (Italy)</option>
+            <option value="Bundesliga">🇩🇪 Bundesliga (Germany)</option>
+            <option value="Ligue 1">🇫🇷 Ligue 1 (France)</option>
             <option value="UEFA Champions League">⭐ UEFA Champions League</option>
             <option value="custom">✏ Other / Custom League...</option>
           </select>
-          <input type="text" class="form-input" id="tip-league" placeholder="League name" style="flex:1;">
+          <input type="text" class="form-input" id="tip-league" placeholder="Enter custom league name (e.g. Kenya Premier League)" style="display:none;min-height:42px;">
         </div>
       </div>
 
       <!-- Home Team Dropdown -->
-      <div class="form-group">
-        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>Home Team *</span>
-          <span id="home-team-badge" style="font-size:0.7rem;color:var(--text-dim);">Pick from league</span>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-weight:700;">Home Team *</span>
+          <span id="home-team-badge" style="font-size:0.7rem;color:var(--neon-indigo, #6366f1);font-weight:600;">🟢 20 clubs</span>
         </label>
         <div style="display:flex;flex-direction:column;gap:6px;">
-          <select class="filter-select" id="tip-home-select" style="width:100%;" onchange="onTeamSelectChange('home', this.value)">
-            <option value="">-- Choose League First --</option>
+          <select class="filter-select" id="tip-home-select" style="width:100%;min-height:42px;" onchange="onTeamSelectChange('home', this.value)">
+            <option value="">-- Select Home Team (20 Premier League clubs) --</option>
+            <option value="Arsenal">Arsenal</option>
+            <option value="Aston Villa">Aston Villa</option>
+            <option value="Bournemouth">Bournemouth</option>
+            <option value="Brentford">Brentford</option>
+            <option value="Brighton & Hove Albion">Brighton & Hove Albion</option>
+            <option value="Chelsea">Chelsea</option>
+            <option value="Crystal Palace">Crystal Palace</option>
+            <option value="Everton">Everton</option>
+            <option value="Fulham">Fulham</option>
+            <option value="Ipswich Town">Ipswich Town</option>
+            <option value="Leicester City">Leicester City</option>
+            <option value="Liverpool">Liverpool</option>
+            <option value="Manchester City">Manchester City</option>
+            <option value="Manchester United">Manchester United</option>
+            <option value="Newcastle United">Newcastle United</option>
+            <option value="Nottingham Forest">Nottingham Forest</option>
+            <option value="Southampton">Southampton</option>
+            <option value="Tottenham Hotspur">Tottenham Hotspur</option>
+            <option value="West Ham United">West Ham United</option>
+            <option value="Wolverhampton Wanderers">Wolverhampton Wanderers</option>
+            <option value="__custom__">✏ Type other custom team...</option>
           </select>
-          <input type="text" class="form-input" id="tip-home" placeholder="Enter custom home team..." style="display:none;">
+          <input type="text" class="form-input" id="tip-home" placeholder="Enter custom home team..." style="display:none;min-height:42px;">
         </div>
       </div>
 
       <!-- Away Team Dropdown -->
-      <div class="form-group">
-        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
-          <span>Away Team *</span>
-          <span id="away-team-badge" style="font-size:0.7rem;color:var(--text-dim);">Pick from league</span>
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+          <span style="font-weight:700;">Away Team *</span>
+          <span id="away-team-badge" style="font-size:0.7rem;color:var(--neon-indigo, #6366f1);font-weight:600;">🟢 20 clubs</span>
         </label>
         <div style="display:flex;flex-direction:column;gap:6px;">
-          <select class="filter-select" id="tip-away-select" style="width:100%;" onchange="onTeamSelectChange('away', this.value)">
-            <option value="">-- Choose League First --</option>
+          <select class="filter-select" id="tip-away-select" style="width:100%;min-height:42px;" onchange="onTeamSelectChange('away', this.value)">
+            <option value="">-- Select Away Team (20 Premier League clubs) --</option>
+            <option value="Arsenal">Arsenal</option>
+            <option value="Aston Villa">Aston Villa</option>
+            <option value="Bournemouth">Bournemouth</option>
+            <option value="Brentford">Brentford</option>
+            <option value="Brighton & Hove Albion">Brighton & Hove Albion</option>
+            <option value="Chelsea">Chelsea</option>
+            <option value="Crystal Palace">Crystal Palace</option>
+            <option value="Everton">Everton</option>
+            <option value="Fulham">Fulham</option>
+            <option value="Ipswich Town">Ipswich Town</option>
+            <option value="Leicester City">Leicester City</option>
+            <option value="Liverpool">Liverpool</option>
+            <option value="Manchester City">Manchester City</option>
+            <option value="Manchester United">Manchester United</option>
+            <option value="Newcastle United">Newcastle United</option>
+            <option value="Nottingham Forest">Nottingham Forest</option>
+            <option value="Southampton">Southampton</option>
+            <option value="Tottenham Hotspur">Tottenham Hotspur</option>
+            <option value="West Ham United">West Ham United</option>
+            <option value="Wolverhampton Wanderers">Wolverhampton Wanderers</option>
+            <option value="__custom__">✏ Type other custom team...</option>
           </select>
-          <input type="text" class="form-input" id="tip-away" placeholder="Enter custom away team..." style="display:none;">
+          <input type="text" class="form-input" id="tip-away" placeholder="Enter custom away team..." style="display:none;min-height:42px;">
         </div>
       </div>
 
-      <div class="form-group">
-        <label class="form-label">Match Date *</label>
-        <input type="date" class="form-input filter-date" id="tip-date">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="margin-bottom:6px;font-weight:700;">Match Date *</label>
+        <input type="date" class="form-input filter-date" id="tip-date" style="min-height:42px;">
       </div>
-      <div class="form-group">
-        <label class="form-label">Kickoff Time</label>
-        <input type="time" class="form-input filter-date" id="tip-time">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="margin-bottom:6px;font-weight:700;">Kickoff Time</label>
+        <input type="time" class="form-input filter-date" id="tip-time" style="min-height:42px;">
       </div>
-      <div class="form-group">
-        <label class="form-label">Odds</label>
-        <input type="number" step="0.01" min="1" class="form-input" id="tip-odds" placeholder="e.g. 1.85">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="margin-bottom:6px;font-weight:700;">Odds</label>
+        <input type="number" step="0.01" min="1" class="form-input" id="tip-odds" placeholder="e.g. 1.85" style="min-height:42px;">
       </div>
-      <div class="form-group">
-        <label class="form-label">Tier *</label>
-        <select class="filter-select" id="tip-tier" style="width:100%;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="margin-bottom:6px;font-weight:700;">Tier *</label>
+        <select class="filter-select" id="tip-tier" style="width:100%;min-height:42px;">
           <option value="free">Free</option>
           <option value="premium">Premium</option>
           <option value="vip">VIP</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Status</label>
-        <select class="filter-select" id="tip-status" style="width:100%;">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="margin-bottom:6px;font-weight:700;">Status</label>
+        <select class="filter-select" id="tip-status" style="width:100%;min-height:42px;">
           <option value="pending">Pending</option>
           <option value="live">Live</option>
           <option value="won">Won ✅</option>
@@ -3050,28 +3092,28 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           <option value="void">Void</option>
         </select>
       </div>
-      <div class="form-group">
-        <label class="form-label">Score (post-match)</label>
-        <input type="text" class="form-input" id="tip-score" placeholder="e.g. 2-1">
+      <div class="form-group" style="margin-bottom: 0;">
+        <label class="form-label" style="margin-bottom:6px;font-weight:700;">Score (post-match)</label>
+        <input type="text" class="form-input" id="tip-score" placeholder="e.g. 2-1" style="min-height:42px;">
       </div>
     </div>
 
     <!-- Our Pick Market Dropdown + Input -->
-    <div class="form-group" style="margin-top:14px;">
-      <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
-        <span>Our Pick *</span>
-        <span style="font-size:0.72rem;color:var(--neon-indigo);font-weight:600;">Choose quick market or type custom</span>
+    <div class="form-group" style="margin-top:14px;margin-bottom:0;">
+      <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <span style="font-weight:700;">Our Pick *</span>
+        <span style="font-size:0.72rem;color:var(--neon-indigo, #6366f1);font-weight:600;">Choose quick market or type</span>
       </label>
-      <div style="display:flex;gap:8px;">
-        <select class="filter-select" id="tip-pick-select" style="flex:1.2;" onchange="onPickSelectChange(this.value)">
-          <option value="">-- Quick Betting Pick --</option>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <select class="filter-select" id="tip-pick-select" style="width:100%;min-height:42px;" onchange="onPickSelectChange(this.value)">
+          <option value="">-- Quick Betting Market Picker --</option>
           <optgroup label="Match Result (1X2)">
             <option value="Home Win">Home Win (1)</option>
             <option value="Draw">Draw (X)</option>
             <option value="Away Win">Away Win (2)</option>
-            <option value="1X (Home Win or Draw)">1X (Home or Draw)</option>
-            <option value="X2 (Draw or Away Win)">X2 (Draw or Away)</option>
-            <option value="12 (Home or Away Win)">12 (Home or Away)</option>
+            <option value="1X (Home Win or Draw)">1X (Home Win or Draw)</option>
+            <option value="X2 (Draw or Away Win)">X2 (Draw or Away Win)</option>
+            <option value="12 (Home or Away Win)">12 (Home or Away Win)</option>
           </optgroup>
           <optgroup label="Over / Under Goals">
             <option value="Over 1.5 Goals">Over 1.5 Goals</option>
@@ -3121,18 +3163,18 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
             <option value="Away (+1) Handicap">Away (+1) Handicap</option>
           </optgroup>
         </select>
-        <input type="text" class="form-input" id="tip-pick" placeholder="e.g. Home Win" style="flex:1;">
+        <input type="text" class="form-input" id="tip-pick" placeholder="Selected pick appears here (or type custom)..." style="width:100%;min-height:42px;">
       </div>
     </div>
 
-    <div class="form-group" style="margin-top:14px;">
-      <label class="form-label">Notes / Analysis</label>
-      <textarea class="form-input" id="tip-notes" rows="3" placeholder="Optional internal match breakdown notes..."></textarea>
+    <div class="form-group" style="margin-top:14px;margin-bottom:0;">
+      <label class="form-label" style="margin-bottom:6px;font-weight:700;">Notes / Analysis</label>
+      <textarea class="form-input" id="tip-notes" rows="2" placeholder="Optional internal match breakdown notes..." style="width:100%;"></textarea>
     </div>
-    <div id="tip-modal-error" style="display:none;color:var(--red);font-size:0.85rem;margin-bottom:12px;padding:10px 14px;background:rgba(255,68,68,0.08);border-radius:6px;border:1px solid rgba(255,68,68,0.2);"></div>
-    <div style="display:flex;gap:12px;">
-      <button class="btn-submit" style="flex:1;" onclick="saveTip()">Save Prediction</button>
-      <button class="btn-submit" style="flex:0;background:transparent;border:1px solid var(--border);color:var(--muted);" onclick="closeTipModal()">Cancel</button>
+    <div id="tip-modal-error" style="display:none;color:var(--red, #ef4444);font-size:0.85rem;margin-top:14px;padding:10px 14px;background:rgba(255,68,68,0.08);border-radius:8px;border:1px solid rgba(255,68,68,0.25);font-weight:600;"></div>
+    <div style="display:flex;gap:12px;margin-top:20px;">
+      <button type="button" class="btn-submit" style="flex:1;min-height:42px;" onclick="saveTip()">Save Prediction</button>
+      <button type="button" class="btn-submit" style="flex:0;background:transparent;border:1px solid var(--border, rgba(255,255,255,0.1));color:var(--muted, #94a3b8);min-height:42px;" onclick="closeTipModal()">Cancel</button>
     </div>
   </div>
 </div>
