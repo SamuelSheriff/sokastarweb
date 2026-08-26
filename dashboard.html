@@ -5243,14 +5243,25 @@ const LEAGUES_DATA = {
 };
 
 function onLeagueSelectChange(selOrVal) {
-  // Accept either the select element or a raw value string
-  const val = (selOrVal && typeof selOrVal === 'object') ? selOrVal.value : selOrVal;
+  let val = '';
+  if (typeof selOrVal === 'string') {
+    val = selOrVal;
+  } else if (selOrVal && selOrVal.target && selOrVal.target.value !== undefined) {
+    val = selOrVal.target.value;
+  } else if (selOrVal && selOrVal.value !== undefined) {
+    val = selOrVal.value;
+  } else {
+    const el = document.getElementById('tip-league-select');
+    val = el ? el.value : '';
+  }
+
+  val = (val || '').trim();
   const inpLeague = document.getElementById('tip-league');
   const helperBadge = document.getElementById('league-helper-badge');
 
   if (val && val !== 'custom') {
     if (inpLeague) { inpLeague.value = val; inpLeague.style.display = 'none'; }
-    if (helperBadge) helperBadge.textContent = '⚡ Teams auto-loaded below';
+    if (helperBadge) helperBadge.textContent = '⚡ ' + val + ' clubs loaded';
   } else if (val === 'custom') {
     if (inpLeague) { inpLeague.value = ''; inpLeague.style.display = 'block'; inpLeague.focus(); }
     if (helperBadge) helperBadge.textContent = '✏ Enter custom league name below';
@@ -5259,9 +5270,10 @@ function onLeagueSelectChange(selOrVal) {
     if (helperBadge) helperBadge.textContent = 'Please choose a league';
   }
 
-  // Force sync the select element's displayed value
   const leagueSel = document.getElementById('tip-league-select');
-  if (leagueSel && val) leagueSel.value = val;
+  if (leagueSel && val && leagueSel.value !== val) {
+    leagueSel.value = val;
+  }
 
   populateTeamSelects(val);
 }
@@ -5275,7 +5287,9 @@ function populateTeamSelects(leagueName, selectedHome = '', selectedAway = '') {
   const awayBadge = document.getElementById('away-team-badge');
   if (!homeSel || !awaySel) return;
 
-  if (!leagueName) {
+  const key = (leagueName || '').trim();
+
+  if (!key) {
     if (homeBadge) homeBadge.textContent = 'Choose league above';
     if (awayBadge) awayBadge.textContent = 'Choose league above';
     homeSel.innerHTML = '<option value="">-- Choose League Above First --</option>';
@@ -5285,7 +5299,7 @@ function populateTeamSelects(leagueName, selectedHome = '', selectedAway = '') {
     return;
   }
 
-  if (leagueName === 'custom' || !LEAGUES_DATA[leagueName]) {
+  if (key === 'custom' || !LEAGUES_DATA[key]) {
     if (homeBadge) homeBadge.textContent = 'Custom team entry';
     if (awayBadge) awayBadge.textContent = 'Custom team entry';
 
@@ -5322,12 +5336,12 @@ function populateTeamSelects(leagueName, selectedHome = '', selectedAway = '') {
   }
 
   // Top League: populate dropdown with clubs of this league
-  const teams = LEAGUES_DATA[leagueName] || [];
-  if (homeBadge) homeBadge.textContent = `🟢 ${teams.length} ${leagueName} clubs`;
-  if (awayBadge) awayBadge.textContent = `🟢 ${teams.length} ${leagueName} clubs`;
+  const teams = LEAGUES_DATA[key] || [];
+  if (homeBadge) homeBadge.textContent = `🟢 ${teams.length} ${key} clubs`;
+  if (awayBadge) awayBadge.textContent = `🟢 ${teams.length} ${key} clubs`;
 
-  let homeHtml = `<option value="">-- Select Home Team (${teams.length} ${leagueName} clubs) --</option>`;
-  let awayHtml = `<option value="">-- Select Away Team (${teams.length} ${leagueName} clubs) --</option>`;
+  let homeHtml = `<option value="">-- Select Home Team (${teams.length} ${key} clubs) --</option>`;
+  let awayHtml = `<option value="">-- Select Away Team (${teams.length} ${key} clubs) --</option>`;
 
   teams.forEach(t => {
     homeHtml += `<option value="${t}">${t}</option>`;
@@ -5338,6 +5352,9 @@ function populateTeamSelects(leagueName, selectedHome = '', selectedAway = '') {
 
   homeSel.innerHTML = homeHtml;
   awaySel.innerHTML = awayHtml;
+
+  if (homeInp) homeInp.style.display = 'none';
+  if (awayInp) awayInp.style.display = 'none';
 
   // Set selected values if provided
   if (selectedHome) {
@@ -5395,10 +5412,10 @@ function openTipModal(id) {
   const errEl = document.getElementById('tip-modal-error');
   errEl.style.display = 'none';
 
-  // Re-wire the league select listener every time the modal opens (defensive bind)
   const leagueDropdown = document.getElementById('tip-league-select');
   if (leagueDropdown) {
-    leagueDropdown.onchange = function() { onLeagueSelectChange(this); };
+    leagueDropdown.onchange = function(e) { onLeagueSelectChange(this || e); };
+    leagueDropdown.oninput = function(e) { onLeagueSelectChange(this || e); };
   }
 
   if (!id) {
