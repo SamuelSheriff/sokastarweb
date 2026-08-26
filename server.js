@@ -47,7 +47,7 @@ const PORT = process.env.PORT || 3000;
 const ADMIN_API_KEY          = process.env.ADMIN_API_KEY || 'sokastar-admin-key-2026';
 const SUPABASE_URL           = process.env.SUPABASE_URL  || '';
 const SUPABASE_KEY           = process.env.SUPABASE_KEY  || '';
-const ADMIN_EMAIL            = process.env.ADMIN_EMAIL   || 'admin@sokastar.com';
+const ADMIN_EMAIL            = process.env.ADMIN_EMAIL   || 'samuelnganga312@gmail.com';
 let ADMIN_PASSWORD           = process.env.ADMIN_PASSWORD || 'Sokastar@2026!';
 
 // Initialize Supabase Client
@@ -544,8 +544,9 @@ const loginLimiter = rateLimit({
 app.post('/api/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body || {};
   const currentPass = await getStoredAdminPassword();
-  if (email === ADMIN_EMAIL && verifyPassword(password, currentPass)) {
-    const token = generateToken(email);
+  const normalizedInputEmail = String(email || '').trim().toLowerCase();
+  if (normalizedInputEmail === ADMIN_EMAIL.toLowerCase() && verifyPassword(password, currentPass)) {
+    const token = generateToken(ADMIN_EMAIL);
     const isProd = process.env.NODE_ENV === 'production';
     let cookieStr = `session=${encodeURIComponent(token)}; Path=/; HttpOnly; Max-Age=86400; SameSite=Lax`;
     if (isProd) cookieStr += '; Secure';
