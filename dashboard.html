@@ -1141,33 +1141,9 @@ const PACKAGES    = ['Daily','Super MultiBet','MidWeek Jackpot','Mega Jackpot','
 const PKG_COLORS  = ['#00c853','#2196f3','#ffd600','#ff9800','#e91e63'];
 
 function fetchTransactions() {
-  const url = `${webhookCfg.serverUrl.replace(/\/*$/,'')}/api/transactions`;
-  const headers = {};
-  if (webhookCfg.apiKey) {
-    headers['X-Api-Key'] = webhookCfg.apiKey;
-  }
-  fetch(url, {
-    method: 'GET',
-    headers: headers
-  })
-    .then(r => {
-      if (!r.ok) throw new Error('Failed to fetch transactions (status ' + r.status + ')');
-      return r.json();
-    })
-    .then(data => {
-      if (Array.isArray(data)) {
-        // Replace local DB with fresh data and persist
-        db.transactions = data;
-        saveDB();
-        refreshDashboard();
-        showToast('Synced latest transactions from server');
-      }
-    })
-    .catch(err => {
-      console.error('Sync error:', err);
-      showToast('Sync failed – check console');
-    });
+  return syncFromServer();
 }
+
 
 
 // Package amount ranges — must match server.js pkgMap
@@ -1547,7 +1523,7 @@ function setChartPeriod(d, btn) {
 }
 
 // transactions management
-function addTransaction() {
+async function addTransaction() {
   const name   = document.getElementById('f-name').value.trim();
   const phone  = document.getElementById('f-phone').value.trim();
   const mpesa  = document.getElementById('f-mpesa').value.trim().toUpperCase();
@@ -1572,8 +1548,27 @@ function addTransaction() {
   }
   errDiv.style.display = 'none';
 
-  db.transactions.push({ id:Date.now(), name, phone, mpesa, amount:Number(amount), package:pkg, date, time:time||'00:00', notes, source:'manual' });
+  const newTx = { id:Date.now(), name, phone, mpesa, amount:Number(amount), package:pkg, date, time:time||'00:00', notes, source:'manual' };
+  
+  // Persist to Supabase backend
+  const { serverUrl, apiKey } = webhookCfg;
+  if (serverUrl) {
+    try {
+      const headers = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['X-Api-Key'] = apiKey;
+      await fetch(serverUrl.replace(/\/$/, '') + '/api/transactions', {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(newTx)
+      });
+    } catch (e) {
+      console.warn('Could not save transaction to server:', e.message);
+    }
+  }
+
+  db.transactions.push(newTx);
   saveDB();
+  refreshDashboard();
 
   document.getElementById('f-name').value   = '';
   document.getElementById('f-phone').value   = '';
@@ -1694,10 +1689,29 @@ async function exportTxCSV() {
   downloadCSV('sokastar-transactions.csv', lines.join('\n'));
 }
 
-function deleteTx(id) {
+async function deleteTx(id) {
   if (!confirm('Delete this transaction? This cannot be undone.')) return;
+  
+  const { serverUrl, apiKey } = webhookCfg;
+  if (serverUrl) {
+    try {
+      const headers = {};
+      if (apiKey) headers['X-Api-Key'] = apiKey;
+      await fetch(serverUrl.replace(/\/$/, '') + '/api/transactions/' + id, {
+        method: 'DELETE',
+        headers
+      });
+    } catch (e) {
+      console.warn('Could not delete transaction on server:', e.message);
+    }
+  }
+
   db.transactions = db.transactions.filter(t => t.id !== id);
-  saveDB(); renderTransactions(); showToast('Transaction deleted.');
+  saveDB();
+  refreshDashboard();
+  renderTransactions();
+  renderSubscribers();
+  showToast('Transaction deleted.');
 }
 
 // subscriber statistics
@@ -1905,7 +1919,8 @@ async function syncFromServer() {
     const headers = {};
     if (apiKey) headers['X-Api-Key'] = apiKey;
     
-    const res = await fetch(serverUrl.replace(/\/$/, '') + '/api/transactions', {
+    // Always fetch with ?all=true so dashboard has complete dataset from Supabase
+    const res = await fetch(serverUrl.replace(/\/$/, '') + '/api/transactions?all=true', {
       headers: headers
     });
 

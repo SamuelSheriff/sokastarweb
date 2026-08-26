@@ -34,6 +34,8 @@ require('dotenv').config();
 
 const express    = require('express');
 const path       = require('path');
+const fs         = require('fs');
+const crypto     = require('crypto');
 const rateLimit  = require('express-rate-limit');
 const { createClient } = require('@supabase/supabase-js');
 const { looksHashed, decodeHash, primeCache } = require('./msisdn-decoder');
@@ -79,8 +81,7 @@ function verifyPassword(password, storedPasswordOrHash) {
   }
 }
 
-// Load & migrate persisted custom password if it exists
-const fs = require('fs');
+// Load & migrate persisted custom password from local file if it exists
 const passwordFilePath = path.join(__dirname, 'admin_password.json');
 if (fs.existsSync(passwordFilePath)) {
   try {
@@ -98,6 +99,53 @@ if (fs.existsSync(passwordFilePath)) {
   } catch (e) {
     console.error('Failed to read admin_password.json:', e.message);
   }
+}
+
+// Async helpers to query Supabase admin_settings table (persists across Render container rebuilds)
+async function getStoredAdminPassword() {
+  try {
+    if (supabase) {
+      const { data, error } = await supabase
+        .from('admin_settings')
+        .select('value')
+        .eq('key', 'admin_password_hash')
+        .maybeSingle();
+      if (!error && data && data.value) {
+        return data.value;
+      }
+    }
+  } catch (_) {}
+
+  // Fallback to local admin_password.json file if present
+  if (fs.existsSync(passwordFilePath)) {
+    try {
+      const fileData = JSON.parse(fs.readFileSync(passwordFilePath, 'utf8'));
+      if (fileData && fileData.password) return fileData.password;
+    } catch (_) {}
+  }
+
+  // Fallback to in-memory / env variable
+  return ADMIN_PASSWORD;
+}
+
+async function setStoredAdminPassword(hashedPassword) {
+  ADMIN_PASSWORD = hashedPassword;
+
+  // 1. Persist to Supabase so it survives Render redeployments
+  try {
+    if (supabase) {
+      await supabase
+        .from('admin_settings')
+        .upsert([{ key: 'admin_password_hash', value: hashedPassword, updated_at: new Date().toISOString() }], { onConflict: 'key' });
+    }
+  } catch (e) {
+    console.warn('[AUTH] Could not save password to Supabase admin_settings:', e.message);
+  }
+
+  // 2. Also save to local admin_password.json
+  try {
+    fs.writeFileSync(passwordFilePath, JSON.stringify({ password: hashedPassword }), 'utf8');
+  } catch (_) {}
 }
 
 // Support both DARAJA_ and MPESA_ prefixed env var names
@@ -506,9 +554,10 @@ const loginLimiter = rateLimit({
 });
 
 // Auth Endpoints
-app.post('/api/login', loginLimiter, (req, res) => {
+app.post('/api/login', loginLimiter, async (req, res) => {
   const { email, password } = req.body || {};
-  if (email === ADMIN_EMAIL && verifyPassword(password, ADMIN_PASSWORD)) {
+  const currentPass = await getStoredAdminPassword();
+  if (email === ADMIN_EMAIL && verifyPassword(password, currentPass)) {
     const token = generateToken(email);
     const isProd = process.env.NODE_ENV === 'production';
     let cookieStr = `session=${encodeURIComponent(token)}; Path=/; HttpOnly; Max-Age=86400; SameSite=Lax`;
@@ -531,12 +580,13 @@ app.get('/api/admin/profile', (req, res) => {
 });
 
 // Admin change password (Protected by requireAdmin)
-app.post('/api/admin/change-password', (req, res) => {
+app.post('/api/admin/change-password', async (req, res) => {
   const { currentPassword, newPassword } = req.body || {};
   if (!currentPassword || !newPassword) {
     return res.status(400).json({ error: 'Current password and new password are required' });
   }
-  if (!verifyPassword(currentPassword, ADMIN_PASSWORD)) {
+  const currentPass = await getStoredAdminPassword();
+  if (!verifyPassword(currentPassword, currentPass)) {
     return res.status(401).json({ error: 'Incorrect current password' });
   }
   if (newPassword.length < 8) {
@@ -544,15 +594,8 @@ app.post('/api/admin/change-password', (req, res) => {
   }
 
   const hashed = hashPassword(newPassword);
-  ADMIN_PASSWORD = hashed;
-  const passwordFilePath = path.join(__dirname, 'admin_password.json');
-  try {
-    fs.writeFileSync(passwordFilePath, JSON.stringify({ password: hashed }), 'utf8');
-    res.json({ status: 'ok' });
-  } catch (e) {
-    console.error('Failed to write admin_password.json:', e.message);
-    res.status(500).json({ error: 'Failed to save new password on server' });
-  }
+  await setStoredAdminPassword(hashed);
+  res.json({ status: 'ok' });
 });
 
 /**
