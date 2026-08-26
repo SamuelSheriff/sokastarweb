@@ -2464,7 +2464,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           </div>
           <div class="table-responsive">
             <table>
-              <thead><tr><th>Phone Number</th><th>Total Paid (KES)</th><th>Transactions</th><th>Packages Used</th><th>Last Payment</th><th>Status</th><th>Action</th></tr></thead>
+              <thead><tr><th style="width:38px;text-align:center;">#</th><th>Phone Number</th><th style="padding-left:10px;">Total Paid (KES)</th><th>Transactions</th><th>Last Payment</th><th>Status</th><th>Action</th></tr></thead>
               <tbody id="sub-tbody"><tr><td colspan="7" class="empty-state">No subscribers yet</td></tr></tbody>
             </table>
           </div>
@@ -4278,16 +4278,16 @@ function renderSubscribers() {
 
   const tbody = document.getElementById('sub-tbody');
   if (!rows.length) { tbody.innerHTML = '<tr><td colspan="7" class="empty-state">No subscribers found</td></tr>'; return; }
-  tbody.innerHTML = rows.map(s => {
+  tbody.innerHTML = rows.map((s, idx) => {
     const days   = Math.floor((new Date(today) - new Date(s.lastDate)) / 86400000);
     const status = days === 0 ? '<span class="badge badge-green">Active Today</span>' :
                    days <= 3  ? '<span class="badge badge-blue">Recent</span>' :
                                 '<span class="badge badge-red">Inactive</span>';
     return `<tr>
-      <td><strong>${subscriberLabel(s)}</strong></td>
-      <td class="amount-cell">${s.total.toLocaleString()}</td>
+      <td style="color:var(--text-dim);font-weight:700;font-size:0.8rem;text-align:center;width:38px;">${idx + 1}</td>
+      <td style="padding-right:10px;"><strong>${subscriberLabel(s)}</strong></td>
+      <td class="amount-cell" style="padding-left:10px;color:var(--neon-green);font-weight:700;">KES ${s.total.toLocaleString()}</td>
       <td style="color:var(--muted);">${s.count}</td>
-      <td style="font-size:0.82rem;color:var(--muted);">${[...s.packages].join(', ') || '—'}</td>
       <td style="color:var(--muted);font-size:0.82rem;">${s.lastDate || '—'}</td>
       <td>${status}</td>
       <td><button class="btn-secondary" style="padding:4px 8px;font-size:0.75rem;" onclick="quickSms('${s.phone}')">✉ SMS</button></td>
