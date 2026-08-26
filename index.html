@@ -530,6 +530,230 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* ── Daily Tips Section ────────────────────────────────────────────────── */
+  .tips-section { background: var(--dark2); }
+  .tips-tier-tabs {
+    display: flex; gap: 8px; margin-bottom: 32px; flex-wrap: wrap;
+  }
+  .tier-tab {
+    padding: 9px 24px;
+    border-radius: 50px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--muted);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.85rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: all .2s;
+  }
+  .tier-tab:hover { color: var(--text); border-color: var(--green); }
+  .tier-tab.active-free  { background: rgba(0,200,83,0.15); color: var(--green); border-color: var(--green); }
+  .tier-tab.active-premium { background: rgba(255,214,0,0.12); color: var(--gold); border-color: var(--gold); }
+  .tier-tab.active-vip { background: rgba(220,80,255,0.12); color: #e040fb; border-color: #e040fb; }
+  .tips-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
+    gap: 20px;
+  }
+  .tip-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 22px 22px 18px;
+    position: relative;
+    overflow: hidden;
+    transition: transform .25s, border-color .25s, box-shadow .25s;
+  }
+  .tip-card:hover { transform: translateY(-4px); box-shadow: 0 12px 30px rgba(0,0,0,0.4); }
+  .tip-card.free-card  { border-top: 3px solid var(--green); }
+  .tip-card.premium-card { border-top: 3px solid var(--gold); }
+  .tip-card.vip-card { border-top: 3px solid #e040fb; }
+  .tip-tier-badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    padding: 3px 10px; border-radius: 50px; margin-bottom: 12px;
+  }
+  .tier-free    { background: rgba(0,200,83,0.12); color: var(--green); border: 1px solid rgba(0,200,83,0.3); }
+  .tier-premium { background: rgba(255,214,0,0.12); color: var(--gold); border: 1px solid rgba(255,214,0,0.3); }
+  .tier-vip     { background: rgba(220,80,255,0.1); color: #e040fb; border: 1px solid rgba(220,80,255,0.3); }
+  .tip-teams {
+    display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .tip-team { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 1.05rem; color: var(--text); }
+  .tip-vs { color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+  .tip-meta {
+    display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+  }
+  .tip-meta-item {
+    font-size: 0.78rem; color: var(--muted);
+    background: rgba(255,255,255,0.04);
+    padding: 3px 10px; border-radius: 4px; border: 1px solid rgba(255,255,255,0.06);
+  }
+  .tip-pick-box {
+    background: rgba(0,200,83,0.08);
+    border: 1px solid rgba(0,200,83,0.2);
+    border-radius: 8px; padding: 12px 16px; margin-bottom: 14px;
+  }
+  .tip-pick-label { font-size: 0.68rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-bottom: 4px; }
+  .tip-pick-value { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; color: var(--green); }
+  .tip-locked-box {
+    border: 1px dashed rgba(255,255,255,0.12);
+    border-radius: 8px; padding: 20px 16px;
+    text-align: center; margin-bottom: 14px;
+    background: rgba(0,0,0,0.25);
+    backdrop-filter: blur(4px);
+  }
+  .tip-lock-icon { font-size: 1.6rem; margin-bottom: 6px; display: block; }
+  .tip-locked-box p { color: var(--muted); font-size: 0.85rem; margin-bottom: 12px; }
+  .tip-unlock-btn {
+    display: inline-block;
+    background: linear-gradient(135deg, var(--gold), #b8860b);
+    color: #111; font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 0.8rem; letter-spacing: 2px; text-transform: uppercase;
+    padding: 9px 20px; border-radius: 6px; text-decoration: none;
+    transition: transform .2s, box-shadow .2s;
+  }
+  .tip-unlock-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(255,214,0,0.3); }
+  .tip-unlock-btn.vip-btn {
+    background: linear-gradient(135deg, #e040fb, #9c27b0);
+    color: white; box-shadow: 0 4px 12px rgba(220,80,255,0.2);
+  }
+  .tip-unlock-btn.vip-btn:hover { box-shadow: 0 6px 18px rgba(220,80,255,0.4); }
+  .tip-status {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 0.8rem; font-weight: 700; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px;
+  }
+  .status-pending { color: var(--muted); }
+  .status-live    { color: var(--gold); animation: pulse-live 1.4s infinite; }
+  .status-won     { color: var(--green); }
+  .status-lost    { color: var(--red); }
+  @keyframes pulse-live { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+  .tips-empty {
+    grid-column: 1/-1; text-align: center;
+    padding: 60px 20px; color: var(--muted);
+  }
+  .tips-empty-icon { font-size: 2.5rem; display: block; margin-bottom: 14px; }
+
+  /* ── History & Win Rate Section ────────────────────────────────────────── */
+  .history-section { background: var(--dark); }
+  .winrate-bar {
+    display: flex; gap: 28px; align-items: center; flex-wrap: wrap;
+    background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+    padding: 28px 32px; margin-bottom: 36px;
+  }
+  .winrate-circle {
+    position: relative; flex-shrink: 0;
+    width: 110px; height: 110px;
+  }
+  .winrate-circle svg { transform: rotate(-90deg); }
+  .winrate-circle-text {
+    position: absolute; inset: 0;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .winrate-num {
+    font-family: 'Bebas Neue', sans-serif; font-size: 2rem;
+    line-height: 1; color: var(--green);
+  }
+  .winrate-label { font-size: 0.65rem; letter-spacing: 2px; text-transform: uppercase; color: var(--muted); margin-top: 2px; }
+  .winrate-stats { display: flex; gap: 28px; flex-wrap: wrap; }
+  .wrs { text-align: center; }
+  .wrs-num { font-family: 'Bebas Neue', sans-serif; font-size: 2rem; line-height: 1; }
+  .wrs-num.green { color: var(--green); } .wrs-num.red { color: var(--red); } .wrs-num.muted { color: var(--muted); }
+  .wrs-label { font-size: 0.7rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .history-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 14px;
+  }
+  .history-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px; padding: 16px 18px;
+    display: flex; align-items: center; gap: 14px;
+    transition: border-color .2s;
+  }
+  .history-card:hover { border-color: rgba(0,200,83,0.3); }
+  .hist-result {
+    width: 42px; height: 42px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .hist-result.won  { background: rgba(0,200,83,0.15); }
+  .hist-result.lost { background: rgba(239,68,68,0.15); }
+  .hist-result.void { background: rgba(255,255,255,0.05); }
+  .hist-info { flex: 1; min-width: 0; }
+  .hist-match { font-family: 'Barlow Condensed', sans-serif; font-weight: 700; font-size: 0.95rem; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .hist-pick { font-size: 0.8rem; color: var(--muted); margin-top: 2px; }
+  .hist-date { font-size: 0.72rem; color: var(--muted); text-align: right; flex-shrink: 0; }
+  .hist-score { font-family: 'Bebas Neue', sans-serif; font-size: 1rem; color: var(--text); text-align: right; margin-top: 2px; }
+
+  /* ── Live Scores Section ───────────────────────────────────────────────── */
+  .live-section { background: var(--dark3); }
+  .live-header {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 28px;
+  }
+  .live-dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: var(--red); box-shadow: 0 0 8px var(--red);
+    animation: pulse-live 1.2s infinite;
+  }
+  .live-badge {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 0.72rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+    color: var(--red); padding: 3px 10px; border-radius: 50px;
+    background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+  }
+  .live-scores-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 14px;
+  }
+  .live-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px; padding: 16px 18px;
+    transition: border-color .2s, transform .2s;
+  }
+  .live-card:hover { border-color: rgba(239,68,68,0.35); transform: translateY(-2px); }
+  .live-card-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;
+  }
+  .live-league { font-size: 0.72rem; letter-spacing: 1px; text-transform: uppercase; color: var(--muted); }
+  .live-minute {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem; color: var(--red);
+    background: rgba(239,68,68,0.1); padding: 2px 8px; border-radius: 4px;
+  }
+  .live-teams {
+    display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  }
+  .live-team-name {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-weight: 700; font-size: 1rem; color: var(--text);
+    flex: 1;
+  }
+  .live-team-name.away { text-align: right; }
+  .live-score-box {
+    background: rgba(0,200,83,0.1); border: 1px solid rgba(0,200,83,0.2);
+    border-radius: 8px; padding: 6px 14px;
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem; color: var(--white); letter-spacing: 2px;
+    min-width: 60px; text-align: center;
+  }
+  .live-empty {
+    grid-column: 1/-1; text-align: center; padding: 50px 20px; color: var(--muted);
+  }
+  .live-widget-wrap {
+    border-radius: 14px; overflow: hidden;
+    border: 1px solid var(--border);
+    background: #000;
+  }
+
   /* Responsive Styles */
   @media (max-width: 768px) {
     .mpesa-grid, .about-grid, .footer-grid { grid-template-columns: 1fr; gap: 36px; }
@@ -538,6 +762,8 @@
     .nav-links a:not(.btn-nav) { display: none; }
     .footer-grid { grid-template-columns: 1fr 1fr; }
     .footer-brand { grid-column: 1/-1; }
+    .winrate-bar { flex-direction: column; align-items: flex-start; }
+    .tips-grid, .history-grid, .live-scores-grid { grid-template-columns: 1fr; }
   }
 
   @media (max-width: 480px) {
@@ -555,8 +781,10 @@
   </a>
   <div class="nav-links">
     <a href="#">Home</a>
+    <a href="#tips">Today's Tips</a>
+    <a href="#live">Live Scores</a>
+    <a href="#history">Results</a>
     <a href="#subscribe">Subscribe</a>
-    <a href="#premium">Premium Tips</a>
     <a href="/admin" class="btn-nav">Login</a>
   </div>
 </nav>
@@ -775,7 +1003,76 @@
   </div>
 </section>
 
-<!-- Photo Gallery -->
+<!-- ── DAILY TIPS ─────────────────────────────────────────────────────────── -->
+<section class="tips-section" id="tips">
+  <div class="container">
+    <div class="section-tag">Today's Predictions</div>
+    <h2>Daily Football Tips</h2>
+    <p style="color:var(--muted);margin-bottom:28px;max-width:540px;">Our analysts post expert tips every day — free picks visible to all, Premium & VIP picks unlocked via M-Pesa subscription.</p>
+    <div class="tips-tier-tabs">
+      <button class="tier-tab active-free" id="tab-all" onclick="filterTips('all', this)">⚽ All Tips</button>
+      <button class="tier-tab" id="tab-free" onclick="filterTips('free', this)">🟢 Free</button>
+      <button class="tier-tab" id="tab-premium" onclick="filterTips('premium', this)">⭐ Premium</button>
+      <button class="tier-tab" id="tab-vip" onclick="filterTips('vip', this)">👑 VIP</button>
+    </div>
+    <div class="tips-grid" id="tips-grid">
+      <div class="tips-empty"><span class="tips-empty-icon">⏳</span>Loading today's tips...</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── LIVE SCORES ────────────────────────────────────────────────────────── -->
+<section class="live-section" id="live">
+  <div class="container">
+    <div class="live-header">
+      <div class="live-dot"></div>
+      <span class="live-badge">Live Now</span>
+      <div class="section-tag" style="margin-bottom:0;">Live Scores</div>
+    </div>
+    <h2>Live Football Scores</h2>
+    <p style="color:var(--muted);margin-bottom:28px;max-width:540px;">Real-time scores from top leagues around the world, updated every minute.</p>
+    <div class="live-widget-wrap">
+      <!-- LiveScore widget via Scoreaxis embed -->
+      <iframe src="https://www.scoreaxis.com/widget/live-games/8?autoHeight=0&amp;inst=4b8c8" style="border:none;width:100%;height:500px;background:#000;" title="Live Football Scores"></iframe>
+    </div>
+  </div>
+</section>
+
+<!-- ── HISTORY & WIN RATE ─────────────────────────────────────────────────── -->
+<section class="history-section" id="history">
+  <div class="container">
+    <div class="section-tag">Track Record</div>
+    <h2>Prediction History & Win Rate</h2>
+    <p style="color:var(--muted);margin-bottom:28px;max-width:540px;">Every result is transparently published. No cherry-picking — full record since day one.</p>
+
+    <div class="winrate-bar" id="winrate-bar">
+      <div class="winrate-circle">
+        <svg width="110" height="110" viewBox="0 0 110 110">
+          <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(0,200,83,0.1)" stroke-width="10"/>
+          <circle cx="55" cy="55" r="46" fill="none" stroke="var(--green)" stroke-width="10"
+            stroke-dasharray="289" id="winrate-arc" stroke-dashoffset="289" stroke-linecap="round"
+            style="transition:stroke-dashoffset 1.2s ease;"/>
+        </svg>
+        <div class="winrate-circle-text">
+          <div class="winrate-num" id="winrate-pct">—</div>
+          <div class="winrate-label">Win Rate</div>
+        </div>
+      </div>
+      <div class="winrate-stats">
+        <div class="wrs"><div class="wrs-num green" id="hist-wins">—</div><div class="wrs-label">Wins</div></div>
+        <div class="wrs"><div class="wrs-num red" id="hist-losses">—</div><div class="wrs-label">Losses</div></div>
+        <div class="wrs"><div class="wrs-num muted" id="hist-voids">—</div><div class="wrs-label">Void</div></div>
+        <div class="wrs"><div class="wrs-num" style="color:var(--text);" id="hist-total">—</div><div class="wrs-label">Total</div></div>
+      </div>
+    </div>
+
+    <div class="history-grid" id="history-grid">
+      <div class="tips-empty"><span class="tips-empty-icon">📋</span>Loading history...</div>
+    </div>
+  </div>
+</section>
+
+<!-- ── PHOTO GALLERY ──────────────────────────────────────────────────────── -->
 <section class="gallery-section">
   <div class="container">
     <div class="section-tag">Football Action</div>
@@ -828,9 +1125,11 @@
       <h4>Quick Links</h4>
       <ul>
         <li><a href="#">Home</a></li>
+        <li><a href="#tips">Today's Tips</a></li>
+        <li><a href="#live">Live Scores</a></li>
+        <li><a href="#history">Results History</a></li>
         <li><a href="#subscribe">Subscribe</a></li>
-        <li><a href="#premium">Premium Tips</a></li>
-        <li><a href="#login">Login</a></li>
+        <li><a href="/admin">Admin Login</a></li>
       </ul>
     </div>
     <div class="footer-col">
@@ -853,5 +1152,144 @@
   </div>
 </footer>
 
+<script>
+// ── Tips Loading Engine ──────────────────────────────────────────────────────
+let allTips = [];
+let activeTier = 'all';
+
+function tierLabel(t) {
+  if (t === 'free')    return '<span class="tip-tier-badge tier-free">🟢 Free</span>';
+  if (t === 'premium') return '<span class="tip-tier-badge tier-premium">⭐ Premium</span>';
+  if (t === 'vip')     return '<span class="tip-tier-badge tier-vip">👑 VIP</span>';
+  return '';
+}
+
+function statusEl(s) {
+  if (s === 'live')    return '<span class="tip-status status-live">🔴 Live Now</span>';
+  if (s === 'won')     return '<span class="tip-status status-won">✅ Won</span>';
+  if (s === 'lost')    return '<span class="tip-status status-lost">❌ Lost</span>';
+  if (s === 'void')    return '<span class="tip-status status-void">— Void</span>';
+  return '<span class="tip-status status-pending">⏳ Pending</span>';
+}
+
+function renderTipCard(t) {
+  const pickSection = t.locked
+    ? `<div class="tip-locked-box">
+         <span class="tip-lock-icon">🔒</span>
+         <p>${t.tier === 'vip' ? 'VIP exclusive pick — subscribe via M-Pesa to unlock.' : 'Premium pick — subscribe via M-Pesa to unlock.'}</p>
+         <a href="#subscribe" class="tip-unlock-btn ${t.tier === 'vip' ? 'vip-btn' : ''}">${t.tier === 'vip' ? '👑 Unlock VIP — KES 250' : '⭐ Unlock Premium — KES 250'}</a>
+       </div>`
+    : `<div class="tip-pick-box">
+         <div class="tip-pick-label">Our Pick</div>
+         <div class="tip-pick-value">${t.pick}</div>
+       </div>`;
+
+  return `
+    <div class="tip-card ${t.tier}-card">
+      ${tierLabel(t.tier)}
+      <div class="tip-teams">
+        <div class="tip-team">${t.home_team}</div>
+        <div class="tip-vs">VS</div>
+        <div class="tip-team" style="text-align:right">${t.away_team}</div>
+      </div>
+      <div class="tip-meta">
+        ${t.league ? `<span class="tip-meta-item">🏆 ${t.league}</span>` : ''}
+        ${t.match_date ? `<span class="tip-meta-item">📅 ${t.match_date}</span>` : ''}
+        ${t.match_time && t.match_time !== '—' ? `<span class="tip-meta-item">⏰ ${t.match_time}</span>` : ''}
+        ${t.odds && !t.locked ? `<span class="tip-meta-item">📊 Odds: ${t.odds}</span>` : ''}
+      </div>
+      ${pickSection}
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        ${statusEl(t.status)}
+        ${t.score ? `<span style="font-family:'Bebas Neue',sans-serif;font-size:1.1rem;color:var(--text);">${t.score}</span>` : ''}
+      </div>
+    </div>`;
+}
+
+function renderTips(tier) {
+  const filtered = tier === 'all' ? allTips : allTips.filter(t => t.tier === tier);
+  const grid = document.getElementById('tips-grid');
+  if (!filtered.length) {
+    grid.innerHTML = `<div class="tips-empty"><span class="tips-empty-icon">⚽</span>No ${tier === 'all' ? '' : tier + ' '}tips posted yet for today. Check back soon!</div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(renderTipCard).join('');
+}
+
+function filterTips(tier, btn) {
+  activeTier = tier;
+  document.querySelectorAll('.tier-tab').forEach(b => b.className = 'tier-tab');
+  if (btn) btn.classList.add(tier === 'all' ? 'active-free' : tier === 'premium' ? 'active-premium' : 'active-vip');
+  renderTips(tier);
+}
+
+async function loadTips() {
+  try {
+    const res = await fetch('/api/predictions');
+    if (!res.ok) throw new Error('Server error');
+    const data = await res.json();
+    allTips = data.predictions || [];
+    renderTips(activeTier);
+  } catch (e) {
+    document.getElementById('tips-grid').innerHTML =
+      '<div class="tips-empty"><span class="tips-empty-icon">📡</span>Tips unavailable. Please check back later.</div>';
+  }
+}
+
+// ── History & Win-Rate Engine ─────────────────────────────────────────────────
+async function loadHistory() {
+  try {
+    const res = await fetch('/api/predictions/history?limit=24');
+    if (!res.ok) throw new Error('Server error');
+    const data = await res.json();
+    const stats = data.stats || {};
+    const history = data.history || [];
+
+    // Update win rate circle
+    const rate = stats.winRate || 0;
+    document.getElementById('winrate-pct').textContent  = rate + '%';
+    document.getElementById('hist-wins').textContent    = stats.wins    || 0;
+    document.getElementById('hist-losses').textContent  = stats.losses  || 0;
+    document.getElementById('hist-voids').textContent   = stats.voids   || 0;
+    document.getElementById('hist-total').textContent   = stats.total   || 0;
+    // Animate arc: circumference = 2π×46 ≈ 289
+    const arc = document.getElementById('winrate-arc');
+    setTimeout(() => {
+      arc.style.strokeDashoffset = 289 - (289 * rate / 100);
+    }, 300);
+
+    // Render history cards
+    const grid = document.getElementById('history-grid');
+    if (!history.length) {
+      grid.innerHTML = '<div class="tips-empty"><span class="tips-empty-icon">📋</span>No completed predictions yet. History will appear here.</div>';
+      return;
+    }
+    grid.innerHTML = history.map(h => {
+      const icons = { won: '✅', lost: '❌', void: '—' };
+      return `
+        <div class="history-card">
+          <div class="hist-result ${h.status}">${icons[h.status] || '⏳'}</div>
+          <div class="hist-info">
+            <div class="hist-match">${h.home_team} vs ${h.away_team}</div>
+            <div class="hist-pick">${h.pick || '—'} ${h.league ? '· ' + h.league : ''}</div>
+          </div>
+          <div>
+            <div class="hist-date">${h.match_date || ''}</div>
+            ${h.score ? `<div class="hist-score">${h.score}</div>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch (e) {
+    document.getElementById('history-grid').innerHTML =
+      '<div class="tips-empty"><span class="tips-empty-icon">📡</span>History unavailable.</div>';
+  }
+}
+
+// Init
+loadTips();
+loadHistory();
+// Refresh tips every 5 minutes
+setInterval(loadTips, 5 * 60 * 1000);
+</script>
 </body>
 </html>

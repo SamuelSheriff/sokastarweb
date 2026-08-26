@@ -1205,6 +1205,141 @@ app.get('/api/sms/estimate', async (req, res) => {
   res.json({ count: seen.size });
 });
 
+// ── Predictions API ───────────────────────────────────────────────────────────
+// In-memory fallback when Supabase 'predictions' table doesn't exist yet.
+let memPredictions = [];
+
+async function dbGetPredictions(filter) {
+  try {
+    let q = supabase.from('predictions').select('*').order('match_date', { ascending: true }).order('id', { ascending: false });
+    if (filter === 'active')   q = q.in('status', ['pending', 'live']);
+    if (filter === 'history')  q = q.in('status', ['won', 'lost', 'void']);
+    const { data, error } = await q.limit(200);
+    if (error) throw error;
+    return data || [];
+  } catch (_) {
+    // Table may not exist — return in-memory store
+    if (filter === 'history')  return memPredictions.filter(p => ['won','lost','void'].includes(p.status));
+    if (filter === 'active')   return memPredictions.filter(p => ['pending','live'].includes(p.status));
+    return memPredictions;
+  }
+}
+
+/**
+ * GET /api/predictions — public endpoint.
+ * Returns today's active tips. Premium & VIP picks are masked for public viewers.
+ * Pass ?admin=1&key=ADMIN_API_KEY to see unmasked picks (dashboard use).
+ */
+app.get('/api/predictions', async (req, res) => {
+  const isAdmin = req.query.key === ADMIN_API_KEY || (req.headers['x-api-key'] === ADMIN_API_KEY);
+  const tips = await dbGetPredictions('active');
+  const result = tips.map(t => {
+    if (!isAdmin && (t.tier === 'premium' || t.tier === 'vip')) {
+      return { ...t, pick: null, odds: t.tier === 'vip' ? null : t.odds, locked: true };
+    }
+    return { ...t, locked: false };
+  });
+  res.json({ predictions: result, count: result.length });
+});
+
+/**
+ * GET /api/predictions/history — public endpoint.
+ * Returns completed predictions with win-rate stats.
+ */
+app.get('/api/predictions/history', async (req, res) => {
+  const limit = Math.min(100, parseInt(req.query.limit, 10) || 30);
+  const tier  = req.query.tier || '';
+  let history = await dbGetPredictions('history');
+  if (tier) history = history.filter(p => p.tier === tier);
+  history = history.slice(0, limit);
+
+  const settled = history.filter(p => p.status === 'won' || p.status === 'lost');
+  const wins = settled.filter(p => p.status === 'won').length;
+  const winRate = settled.length > 0 ? Math.round((wins / settled.length) * 100) : 0;
+
+  res.json({
+    history,
+    stats: {
+      total: settled.length,
+      wins,
+      losses: settled.length - wins,
+      voids: history.filter(p => p.status === 'void').length,
+      winRate,
+    }
+  });
+});
+
+/**
+ * POST /api/predictions — admin: post a new tip.
+ * Body: { homeTeam, awayTeam, league, matchDate, matchTime, pick, odds, tier, notes }
+ * tier: "free" | "premium" | "vip"
+ */
+app.post('/api/predictions', async (req, res) => {
+  const { homeTeam, awayTeam, league, matchDate, matchTime, pick, odds, tier, notes } = req.body || {};
+  if (!homeTeam || !awayTeam || !pick || !tier) {
+    return res.status(400).json({ error: 'homeTeam, awayTeam, pick, and tier are required' });
+  }
+  const prediction = {
+    id: Date.now(),
+    home_team:   String(homeTeam).trim(),
+    away_team:   String(awayTeam).trim(),
+    league:      String(league || '').trim(),
+    match_date:  matchDate || new Date().toISOString().split('T')[0],
+    match_time:  matchTime || '—',
+    pick:        String(pick).trim(),
+    odds:        odds ? parseFloat(odds) : null,
+    tier:        ['free','premium','vip'].includes(tier) ? tier : 'free',
+    status:      'pending',
+    notes:       String(notes || '').trim(),
+    created_at:  new Date().toISOString(),
+  };
+  try {
+    const { error } = await supabase.from('predictions').insert([prediction]);
+    if (error) throw error;
+  } catch (_) {
+    memPredictions.unshift(prediction);
+  }
+  res.json({ status: 'ok', prediction });
+});
+
+/**
+ * PUT /api/predictions/:id — admin: update tip status or score.
+ * Body: { status, score, pick, odds }
+ * status: "pending" | "live" | "won" | "lost" | "void"
+ */
+app.put('/api/predictions/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  const updates = {};
+  if (req.body.status !== undefined) updates.status = req.body.status;
+  if (req.body.score  !== undefined) updates.score  = String(req.body.score).trim();
+  if (req.body.pick   !== undefined) updates.pick   = String(req.body.pick).trim();
+  if (req.body.odds   !== undefined) updates.odds   = parseFloat(req.body.odds);
+  updates.updated_at = new Date().toISOString();
+
+  try {
+    const { error } = await supabase.from('predictions').update(updates).eq('id', id);
+    if (error) throw error;
+  } catch (_) {
+    const idx = memPredictions.findIndex(p => p.id === id);
+    if (idx !== -1) Object.assign(memPredictions[idx], updates);
+  }
+  res.json({ status: 'ok' });
+});
+
+/**
+ * DELETE /api/predictions/:id — admin: remove a tip.
+ */
+app.delete('/api/predictions/:id', async (req, res) => {
+  const id = parseInt(req.params.id, 10);
+  try {
+    const { error } = await supabase.from('predictions').delete().eq('id', id);
+    if (error) throw error;
+  } catch (_) {
+    memPredictions = memPredictions.filter(p => p.id !== id);
+  }
+  res.json({ status: 'deleted' });
+});
+
 /**
  * Catch-all: log any POST to /webhook/* or /payment/* paths we don't recognize.
  * This catches if Safaricom is hitting a different path than expected.
