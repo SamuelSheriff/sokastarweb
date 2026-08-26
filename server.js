@@ -818,33 +818,74 @@ app.post(['/webhook/c2b/validate', '/payment/validation'], ipWhitelistMiddleware
 app.post(['/webhook/c2b/confirm', '/payment/confirmation', '/mpesa/callback'], ipWhitelistMiddleware, handleC2BConfirmation);
 
 /**
+ * Helper to fetch ALL transactions from Supabase by paginating in 1,000-row batches
+ * (bypasses PostgREST / Supabase default single-request 1,000 row limit).
+ */
+async function fetchAllTransactionsFromDb(searchQuery = '') {
+  if (!supabase) return { transactions: [], totalCount: 0 };
+  let allRows = [];
+  const BATCH_SIZE = 1000;
+  let from = 0;
+  let totalCount = 0;
+
+  while (true) {
+    let q = supabase
+      .from('transactions')
+      .select('*', { count: 'exact' })
+      .order('id', { ascending: false })
+      .range(from, from + BATCH_SIZE - 1);
+
+    if (searchQuery) {
+      q = q.or(`phone.ilike.%${searchQuery}%,name.ilike.%${searchQuery}%,mpesa.ilike.%${searchQuery}%,package.ilike.%${searchQuery}%,notes.ilike.%${searchQuery}%`);
+    }
+
+    const { data, count, error } = await q;
+    if (error) throw error;
+    if (count !== null && count !== undefined) {
+      totalCount = count;
+    }
+
+    if (!data || data.length === 0) break;
+    allRows.push(...data);
+
+    if (data.length < BATCH_SIZE || (totalCount > 0 && allRows.length >= totalCount)) {
+      break;
+    }
+
+    from += BATCH_SIZE;
+    if (from >= 100000) break; // safety upper bound (100k records)
+  }
+
+  return { transactions: allRows, totalCount: totalCount || allRows.length };
+}
+
+/**
  * GET /api/transactions — dashboard polling & pagination (X-Api-Key protected)
  * Supports query params:
  *   • page   - 1-indexed page number (default: 1)
- *   • limit  - rows per page (default: 50, max: 1000)
+ *   • limit  - rows per page (default: 50, max: 2000)
  *   • search - optional search query (matches phone, name, mpesa, package, notes)
- *   • all    - "true" to fetch all records (for CSV exports, capped at 10,000)
+ *   • all    - "true" to fetch all records (for complete dashboard sync & CSV export)
  */
 app.get('/api/transactions', async (req, res) => {
-  const isAll = req.query.all === 'true';
+  const isAll = req.query.all === 'true' || req.query.all === '1';
   const search = (req.query.search || '').trim();
   const page = Math.max(1, parseInt(req.query.page, 10) || 1);
-  const limit = Math.min(1000, Math.max(1, parseInt(req.query.limit, 10) || 50));
+  const limit = Math.min(2000, Math.max(1, parseInt(req.query.limit, 10) || 50));
 
   try {
+    if (!supabase) {
+      return res.json({ transactions: [], count: 0, totalCount: 0, page: 1, limit: 0, totalPages: 1 });
+    }
+
     if (isAll) {
-      let query = supabase.from('transactions').select('*', { count: 'exact' }).order('id', { ascending: false });
-      if (search) {
-        query = query.or(`phone.ilike.%${search}%,name.ilike.%${search}%,mpesa.ilike.%${search}%,package.ilike.%${search}%,notes.ilike.%${search}%`);
-      }
-      const { data, count, error } = await query.limit(10000);
-      if (error) throw error;
+      const { transactions, totalCount } = await fetchAllTransactionsFromDb(search);
       return res.json({
-        transactions: data || [],
-        count: count || (data || []).length,
-        totalCount: count || (data || []).length,
+        transactions,
+        count: totalCount,
+        totalCount,
         page: 1,
-        limit: data ? data.length : 0,
+        limit: transactions.length,
         totalPages: 1
       });
     }
@@ -1058,13 +1099,6 @@ app.post('/api/sms/send-single', async (req, res) => {
  * POST /api/sms/send-bulk
  * Admin-only. Sends a bulk SMS campaign to recipients filtered by package and
  * active-since criteria, then logs the campaign to sms_campaigns.
- *
- * Body:
- *   {
- *     message:    string  — the SMS body
- *     package:    string  — "All" | "Daily" | "Mega Jackpot" | ... (optional)
- *     activeDays: number  — only include phones that paid within N days (0=all time)
- *   }
  */
 app.post('/api/sms/send-bulk', async (req, res) => {
 
@@ -1082,38 +1116,41 @@ app.post('/api/sms/send-bulk', async (req, res) => {
   }
 
   try {
-    // Fetch all transactions from Supabase
-    let query = supabase.from('transactions').select('phone, package, date').not('phone', 'is', null);
-
-    // Filter by package
-    if (pkg && pkg !== 'All') {
-      query = query.eq('package', pkg);
-    }
-
     // Get Kenya local today date (UTC+3)
     const nowKE = new Date(Date.now() + 3 * 60 * 60 * 1000);
     const todayKE = nowKE.toISOString().split('T')[0];
 
-    // Filter by recency
-    if (activeDays === 'today') {
-      // Exact match for today (Kenya date)
-      query = query.eq('date', todayKE);
-    } else if (activeDays && parseInt(activeDays, 10) > 0) {
-      const since = new Date(Date.now() + 3 * 60 * 60 * 1000);
-      since.setDate(since.getDate() - parseInt(activeDays, 10));
-      const sinceDate = since.toISOString().split('T')[0];
-      query = query.gte('date', sinceDate);
-    }
+    // Fetch all matching transactions across all batches
+    let allTxns = [];
+    let from = 0;
+    const BATCH_SIZE = 1000;
+    while (true) {
+      let query = supabase.from('transactions').select('phone, package, date').not('phone', 'is', null).range(from, from + BATCH_SIZE - 1);
+      if (pkg && pkg !== 'All') query = query.eq('package', pkg);
 
-    const { data: txns, error: fetchErr } = await query;
-    if (fetchErr) return res.status(500).json({ error: fetchErr.message });
+      if (activeDays === 'today') {
+        query = query.eq('date', todayKE);
+      } else if (activeDays && parseInt(activeDays, 10) > 0) {
+        const since = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        since.setDate(since.getDate() - parseInt(activeDays, 10));
+        const sinceDate = since.toISOString().split('T')[0];
+        query = query.gte('date', sinceDate);
+      }
+
+      const { data: txns, error: fetchErr } = await query;
+      if (fetchErr) return res.status(500).json({ error: fetchErr.message });
+      if (!txns || txns.length === 0) break;
+      allTxns.push(...txns);
+      if (txns.length < BATCH_SIZE) break;
+      from += BATCH_SIZE;
+      if (from >= 100000) break;
+    }
 
     // Deduplicate phones (keep unique real phone numbers)
     const seen = new Set();
     const phones = [];
-    for (const tx of (txns || [])) {
+    for (const tx of allTxns) {
       const raw = (tx.phone || '').trim();
-      // Check for hashed MSISDN on the RAW value before stripping non-digits
       if (!raw || looksHashed(raw)) continue;
       const p = raw.replace(/\D/g, '');
       if (p && p.length >= 9 && !seen.has(p)) {
@@ -1208,31 +1245,46 @@ app.get('/api/sms/logs', async (req, res) => {
 app.get('/api/sms/estimate', async (req, res) => {
 
   const { package: pkg, activeDays } = req.query;
-  let query = supabase.from('transactions').select('phone, date').not('phone', 'is', null);
-  if (pkg && pkg !== 'All') query = query.eq('package', pkg);
-
-  // Get Kenya local today date (UTC+3)
   const nowKE = new Date(Date.now() + 3 * 60 * 60 * 1000);
   const todayKE = nowKE.toISOString().split('T')[0];
 
-  if (activeDays === 'today') {
-    query = query.eq('date', todayKE);
-  } else if (activeDays && parseInt(activeDays, 10) > 0) {
-    const since = new Date(Date.now() + 3 * 60 * 60 * 1000);
-    since.setDate(since.getDate() - parseInt(activeDays, 10));
-    query = query.gte('date', since.toISOString().split('T')[0]);
-  }
-  const { data: txns, error } = await query;
-  if (error) return res.status(500).json({ error: error.message });
+  let allTxns = [];
+  let from = 0;
+  const BATCH_SIZE = 1000;
 
-  const seen = new Set();
-  for (const tx of (txns || [])) {
-    const raw = (tx.phone || '').trim();
-    if (!raw || looksHashed(raw)) continue;
-    const p = raw.replace(/\D/g, '');
-    if (p && p.length >= 9) seen.add(p);
+  try {
+    while (true) {
+      let query = supabase.from('transactions').select('phone, date').not('phone', 'is', null).range(from, from + BATCH_SIZE - 1);
+      if (pkg && pkg !== 'All') query = query.eq('package', pkg);
+
+      if (activeDays === 'today') {
+        query = query.eq('date', todayKE);
+      } else if (activeDays && parseInt(activeDays, 10) > 0) {
+        const since = new Date(Date.now() + 3 * 60 * 60 * 1000);
+        since.setDate(since.getDate() - parseInt(activeDays, 10));
+        query = query.gte('date', since.toISOString().split('T')[0]);
+      }
+
+      const { data: txns, error } = await query;
+      if (error) return res.status(500).json({ error: error.message });
+      if (!txns || txns.length === 0) break;
+      allTxns.push(...txns);
+      if (txns.length < BATCH_SIZE) break;
+      from += BATCH_SIZE;
+      if (from >= 100000) break;
+    }
+
+    const seen = new Set();
+    for (const tx of allTxns) {
+      const raw = (tx.phone || '').trim();
+      if (!raw || looksHashed(raw)) continue;
+      const p = raw.replace(/\D/g, '');
+      if (p && p.length >= 9) seen.add(p);
+    }
+    res.json({ count: seen.size });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
   }
-  res.json({ count: seen.size });
 });
 
 // ── Predictions API ───────────────────────────────────────────────────────────
