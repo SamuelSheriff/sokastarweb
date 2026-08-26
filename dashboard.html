@@ -526,6 +526,7 @@ button, a, select, input, .nav-item, .btn-submit, .btn-secondary, .btn-danger, .
   align-items: center;
   justify-content: space-between;
   gap: 20px;
+  overflow: hidden;
 }
 
 .welcome-box {
@@ -553,6 +554,8 @@ button, a, select, input, .nav-item, .btn-submit, .btn-secondary, .btn-danger, .
   display: flex;
   align-items: center;
   gap: 16px;
+  flex-shrink: 0;
+  min-width: 0;
 }
 
 /* Topbar Search */
@@ -1753,9 +1756,59 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
     backdrop-filter: blur(4px);
   }
   .sidebar-backdrop.show { display: block; }
-  .topbar { padding: 14px 18px; }
-  .topbar-search input { width: 140px; }
-  .topbar-search input:focus { width: 180px; }
+  .topbar {
+    padding: 10px 14px;
+    flex-wrap: wrap;
+    gap: 8px;
+    overflow: hidden;
+  }
+  .welcome-box {
+    flex: 1 1 100%;
+    min-width: 0;
+  }
+  .topbar-right {
+    flex: 1 1 100%;
+    gap: 8px;
+    justify-content: flex-end;
+    flex-wrap: nowrap;
+    overflow: hidden;
+    min-width: 0;
+  }
+  .topbar-search {
+    flex-shrink: 1;
+    min-width: 0;
+    max-width: 140px;
+  }
+  .topbar-search input {
+    width: 100px;
+    padding: 8px 8px 8px 34px;
+    font-size: 0.78rem;
+  }
+  .topbar-search input:focus {
+    width: 130px;
+  }
+  .topbar-search kbd { display: none; }
+  .theme-btn {
+    padding: 6px 8px;
+    gap: 4px;
+    font-size: 0.75rem;
+  }
+  #theme-btn-label { display: none; }
+  .theme-btn > i:last-child { display: none; }
+  .status-pill {
+    padding: 4px 8px;
+    font-size: 0.72rem;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  #sync-label { display: none; }
+  .notif-btn {
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
+  }
+  .welcome-heading { font-size: 1.1rem; }
+  .welcome-subtitle { display: none; }
   .menu-toggle {
     display: flex;
     align-items: center;
@@ -1766,6 +1819,7 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
     font-size: 1.5rem;
     cursor: pointer;
     padding: 4px;
+    flex-shrink: 0;
   }
   .page-content { padding: 16px; }
   .form-grid { grid-template-columns: 1fr; }
