@@ -2956,18 +2956,41 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
 
     <input type="hidden" id="tip-edit-id">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+      <!-- League Dropdown Selector (Top of Form) -->
+      <div class="form-group" style="grid-column: span 2;">
+        <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+          <span>League *</span>
+          <span style="font-size:0.72rem;color:var(--neon-green);font-weight:600;">⚡ Selecting league auto-populates teams below</span>
+        </label>
+        <div style="display:flex;gap:8px;">
+          <select class="filter-select" id="tip-league-select" style="flex:1.2;" onchange="onLeagueSelectChange(this.value)">
+            <option value="">-- Select Top League --</option>
+            <option value="Premier League">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League (EPL)</option>
+            <option value="La Liga">🇪🇸 La Liga</option>
+            <option value="Serie A">🇮🇹 Serie A</option>
+            <option value="Bundesliga">🇩🇪 Bundesliga</option>
+            <option value="Ligue 1">🇫🇷 Ligue 1</option>
+            <option value="UEFA Champions League">⭐ UEFA Champions League</option>
+            <option value="custom">✏ Other / Custom League...</option>
+          </select>
+          <input type="text" class="form-input" id="tip-league" placeholder="League name" style="flex:1;">
+        </div>
+      </div>
+
+      <!-- Home Team with League Datalist -->
       <div class="form-group">
         <label class="form-label">Home Team *</label>
-        <input type="text" class="form-input" id="tip-home" placeholder="e.g. Arsenal">
+        <input type="text" class="form-input" id="tip-home" list="home-team-datalist" placeholder="Select or type Home Team" autocomplete="off">
+        <datalist id="home-team-datalist"></datalist>
       </div>
+
+      <!-- Away Team with League Datalist -->
       <div class="form-group">
         <label class="form-label">Away Team *</label>
-        <input type="text" class="form-input" id="tip-away" placeholder="e.g. Chelsea">
+        <input type="text" class="form-input" id="tip-away" list="away-team-datalist" placeholder="Select or type Away Team" autocomplete="off">
+        <datalist id="away-team-datalist"></datalist>
       </div>
-      <div class="form-group">
-        <label class="form-label">League</label>
-        <input type="text" class="form-input" id="tip-league" placeholder="e.g. Premier League">
-      </div>
+
       <div class="form-group">
         <label class="form-label">Match Date *</label>
         <input type="date" class="form-input filter-date" id="tip-date">
@@ -2998,18 +3021,84 @@ tbody td { padding: 14px 20px; font-size: 0.88rem; color: var(--text-main); vert
           <option value="void">Void</option>
         </select>
       </div>
+      <div class="form-group">
+        <label class="form-label">Score (post-match)</label>
+        <input type="text" class="form-input" id="tip-score" placeholder="e.g. 2-1">
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Our Pick * (e.g. "Home Win", "Over 2.5", "BTTS")</label>
-      <input type="text" class="form-input" id="tip-pick" placeholder="e.g. Home Win">
+
+    <!-- Our Pick Market Dropdown + Input -->
+    <div class="form-group" style="margin-top:14px;">
+      <label class="form-label" style="display:flex;justify-content:space-between;align-items:center;">
+        <span>Our Pick *</span>
+        <span style="font-size:0.72rem;color:var(--neon-indigo);font-weight:600;">Choose quick market or type custom</span>
+      </label>
+      <div style="display:flex;gap:8px;">
+        <select class="filter-select" id="tip-pick-select" style="flex:1.2;" onchange="onPickSelectChange(this.value)">
+          <option value="">-- Quick Betting Pick --</option>
+          <optgroup label="Match Result (1X2)">
+            <option value="Home Win">Home Win (1)</option>
+            <option value="Draw">Draw (X)</option>
+            <option value="Away Win">Away Win (2)</option>
+            <option value="1X (Home Win or Draw)">1X (Home or Draw)</option>
+            <option value="X2 (Draw or Away Win)">X2 (Draw or Away)</option>
+            <option value="12 (Home or Away Win)">12 (Home or Away)</option>
+          </optgroup>
+          <optgroup label="Over / Under Goals">
+            <option value="Over 1.5 Goals">Over 1.5 Goals</option>
+            <option value="Under 1.5 Goals">Under 1.5 Goals</option>
+            <option value="Over 2.5 Goals">Over 2.5 Goals</option>
+            <option value="Under 2.5 Goals">Under 2.5 Goals</option>
+            <option value="Over 3.5 Goals">Over 3.5 Goals</option>
+            <option value="Under 3.5 Goals">Under 3.5 Goals</option>
+          </optgroup>
+          <optgroup label="Both Teams to Score">
+            <option value="Both Teams To Score (GG)">BTTS - Yes (GG)</option>
+            <option value="Both Teams NOT To Score (NG)">BTTS - No (NG)</option>
+          </optgroup>
+          <optgroup label="Half Time / Full Time">
+            <option value="HT/FT 1/1">HT/FT - 1/1 (Home/Home)</option>
+            <option value="HT/FT 2/2">HT/FT - 2/2 (Away/Away)</option>
+            <option value="HT/FT X/1">HT/FT - X/1 (Draw/Home)</option>
+            <option value="HT/FT X/2">HT/FT - X/2 (Draw/Away)</option>
+            <option value="HT/FT 1/X">HT/FT - 1/X (Home/Draw)</option>
+            <option value="HT/FT 2/X">HT/FT - 2/X (Away/Draw)</option>
+            <option value="HT/FT 1/2">HT/FT - 1/2 (Turnaround)</option>
+            <option value="HT/FT 2/1">HT/FT - 2/1 (Turnaround)</option>
+          </optgroup>
+          <optgroup label="Correct Score">
+            <option value="Correct Score 1-0">Correct Score 1-0</option>
+            <option value="Correct Score 2-0">Correct Score 2-0</option>
+            <option value="Correct Score 2-1">Correct Score 2-1</option>
+            <option value="Correct Score 3-0">Correct Score 3-0</option>
+            <option value="Correct Score 3-1">Correct Score 3-1</option>
+            <option value="Correct Score 0-0">Correct Score 0-0</option>
+            <option value="Correct Score 1-1">Correct Score 1-1</option>
+            <option value="Correct Score 2-2">Correct Score 2-2</option>
+            <option value="Correct Score 0-1">Correct Score 0-1</option>
+            <option value="Correct Score 0-2">Correct Score 0-2</option>
+            <option value="Correct Score 1-2">Correct Score 1-2</option>
+          </optgroup>
+          <optgroup label="Combos & Handicaps">
+            <option value="Home Win & Over 1.5">Home Win & Over 1.5</option>
+            <option value="Away Win & Over 1.5">Away Win & Over 1.5</option>
+            <option value="Home Win & Over 2.5">Home Win & Over 2.5</option>
+            <option value="Away Win & Over 2.5">Away Win & Over 2.5</option>
+            <option value="Home Win & BTTS">Home Win & BTTS</option>
+            <option value="Away Win & BTTS">Away Win & BTTS</option>
+            <option value="Draw No Bet (DNB 1)">Draw No Bet (DNB 1)</option>
+            <option value="Draw No Bet (DNB 2)">Draw No Bet (DNB 2)</option>
+            <option value="Home (-1) Handicap">Home (-1) Handicap</option>
+            <option value="Away (+1) Handicap">Away (+1) Handicap</option>
+          </optgroup>
+        </select>
+        <input type="text" class="form-input" id="tip-pick" placeholder="e.g. Home Win" style="flex:1;">
+      </div>
     </div>
-    <div class="form-group">
-      <label class="form-label">Score (fill in after match)</label>
-      <input type="text" class="form-input" id="tip-score" placeholder="e.g. 2-1">
-    </div>
-    <div class="form-group">
+
+    <div class="form-group" style="margin-top:14px;">
       <label class="form-label">Notes / Analysis</label>
-      <textarea class="form-input" id="tip-notes" rows="3" placeholder="Optional internal notes..."></textarea>
+      <textarea class="form-input" id="tip-notes" rows="3" placeholder="Optional internal match breakdown notes..."></textarea>
     </div>
     <div id="tip-modal-error" style="display:none;color:var(--red);font-size:0.85rem;margin-bottom:12px;padding:10px 14px;background:rgba(255,68,68,0.08);border-radius:6px;border:1px solid rgba(255,68,68,0.2);"></div>
     <div style="display:flex;gap:12px;">
@@ -5039,6 +5128,88 @@ async function quickUpdateStatus(id, status) {
   }
 }
 
+// ── LEAGUES & TEAMS DATA FOR PREDICTIONS MANAGER ──────────────
+const LEAGUES_DATA = {
+  'Premier League': [
+    'Arsenal', 'Aston Villa', 'Bournemouth', 'Brentford', 'Brighton & Hove Albion',
+    'Chelsea', 'Crystal Palace', 'Everton', 'Fulham', 'Ipswich Town',
+    'Leicester City', 'Liverpool', 'Manchester City', 'Manchester United',
+    'Newcastle United', 'Nottingham Forest', 'Southampton', 'Tottenham Hotspur',
+    'West Ham United', 'Wolverhampton Wanderers'
+  ],
+  'La Liga': [
+    'Alavés', 'Athletic Bilbao', 'Atlético Madrid', 'Barcelona', 'Celta Vigo',
+    'Espanyol', 'Getafe', 'Girona', 'Las Palmas', 'Leganés', 'Mallorca',
+    'Osasuna', 'Rayo Vallecano', 'Real Betis', 'Real Madrid', 'Real Sociedad',
+    'Real Valladolid', 'Sevilla', 'Valencia', 'Villarreal'
+  ],
+  'Serie A': [
+    'Atalanta', 'Bologna', 'Cagliari', 'Como', 'Empoli', 'Fiorentina',
+    'Genoa', 'Hellas Verona', 'Inter Milan', 'Juventus', 'Lazio', 'Lecce',
+    'AC Milan', 'Monza', 'Napoli', 'Parma', 'AS Roma', 'Torino', 'Udinese', 'Venezia'
+  ],
+  'Bundesliga': [
+    'FC Augsburg', 'Bayer Leverkusen', 'Bayern Munich', 'VfL Bochum',
+    'Borussia Dortmund', 'Borussia Mönchengladbach', 'Eintracht Frankfurt',
+    'SC Freiburg', '1. FC Heidenheim', 'TSG Hoffenheim', 'Holstein Kiel',
+    'RB Leipzig', 'Mainz 05', 'FC St. Pauli', 'VfB Stuttgart', 'Union Berlin',
+    'Werder Bremen', 'VfL Wolfsburg'
+  ],
+  'Ligue 1': [
+    'Angers', 'Auxerre', 'Brest', 'Le Havre', 'Lens', 'Lille', 'Lyon',
+    'Marseille', 'AS Monaco', 'Montpellier', 'Nantes', 'Nice',
+    'Paris Saint-Germain', 'Reims', 'Rennes', 'Saint-Étienne', 'Strasbourg', 'Toulouse'
+  ],
+  'UEFA Champions League': [
+    'Arsenal', 'Aston Villa', 'Atalanta', 'Atlético Madrid', 'Bayer Leverkusen',
+    'Bayern Munich', 'Barcelona', 'Benfica', 'Bologna', 'Brest', 'Celtic',
+    'Club Brugge', 'Dinamo Zagreb', 'Borussia Dortmund', 'Feyenoord', 'Girona',
+    'Inter Milan', 'Juventus', 'RB Leipzig', 'Lille', 'Liverpool', 'Manchester City',
+    'AC Milan', 'AS Monaco', 'Paris Saint-Germain', 'PSV Eindhoven', 'Real Madrid',
+    'Red Bull Salzburg', 'Red Star Belgrade', 'Shakhtar Donetsk', 'Sparta Prague',
+    'Sporting CP', 'Sturm Graz', 'VfB Stuttgart', 'Young Boys'
+  ]
+};
+
+function onLeagueSelectChange(val) {
+  const inpLeague = document.getElementById('tip-league');
+  if (val && val !== 'custom') {
+    if (inpLeague) inpLeague.value = val;
+  } else if (val === 'custom') {
+    if (inpLeague) {
+      inpLeague.value = '';
+      inpLeague.focus();
+    }
+  }
+  populateTeamDataLists(val);
+}
+
+function populateTeamDataLists(leagueName) {
+  const homeDl = document.getElementById('home-team-datalist');
+  const awayDl = document.getElementById('away-team-datalist');
+  if (!homeDl || !awayDl) return;
+
+  let teams = [];
+  if (leagueName && LEAGUES_DATA[leagueName]) {
+    teams = LEAGUES_DATA[leagueName];
+  } else {
+    // Collect all teams from all leagues as fallback options
+    const all = new Set();
+    Object.values(LEAGUES_DATA).forEach(list => list.forEach(t => all.add(t)));
+    teams = [...all].sort();
+  }
+
+  const optionsHtml = teams.map(t => `<option value="${t}">`).join('');
+  homeDl.innerHTML = optionsHtml;
+  awayDl.innerHTML = optionsHtml;
+}
+
+function onPickSelectChange(val) {
+  if (!val) return;
+  const inpPick = document.getElementById('tip-pick');
+  if (inpPick) inpPick.value = val;
+}
+
 function openTipModal(id) {
   const modal = document.getElementById('tip-modal');
   modal.style.display = 'flex';
@@ -5052,10 +5223,15 @@ function openTipModal(id) {
     document.getElementById('tip-home').value   = '';
     document.getElementById('tip-away').value   = '';
     document.getElementById('tip-league').value = '';
+    const lSel = document.getElementById('tip-league-select');
+    if (lSel) lSel.value = '';
+    populateTeamDataLists('');
     document.getElementById('tip-date').value   = new Date().toISOString().split('T')[0];
     document.getElementById('tip-time').value   = '';
     document.getElementById('tip-odds').value   = '';
     document.getElementById('tip-pick').value   = '';
+    const pSel = document.getElementById('tip-pick-select');
+    if (pSel) pSel.value = '';
     document.getElementById('tip-score').value  = '';
     document.getElementById('tip-notes').value  = '';
     document.getElementById('tip-tier').value   = 'free';
@@ -5070,10 +5246,39 @@ function openTipModal(id) {
   document.getElementById('tip-home').value    = tip.home_team || '';
   document.getElementById('tip-away').value    = tip.away_team || '';
   document.getElementById('tip-league').value  = tip.league    || '';
+
+  const leagueSelect = document.getElementById('tip-league-select');
+  if (leagueSelect) {
+    if (tip.league && LEAGUES_DATA[tip.league]) {
+      leagueSelect.value = tip.league;
+      populateTeamDataLists(tip.league);
+    } else if (tip.league) {
+      leagueSelect.value = 'custom';
+      populateTeamDataLists('');
+    } else {
+      leagueSelect.value = '';
+      populateTeamDataLists('');
+    }
+  }
+
   document.getElementById('tip-date').value    = tip.match_date || '';
   document.getElementById('tip-time').value    = tip.match_time && tip.match_time !== '—' ? tip.match_time : '';
   document.getElementById('tip-odds').value    = tip.odds   || '';
   document.getElementById('tip-pick').value    = tip.pick   || '';
+
+  const pickSelect = document.getElementById('tip-pick-select');
+  if (pickSelect) {
+    let matchFound = false;
+    for (let opt of pickSelect.options) {
+      if (opt.value && opt.value.toLowerCase() === (tip.pick || '').toLowerCase()) {
+        pickSelect.value = opt.value;
+        matchFound = true;
+        break;
+      }
+    }
+    if (!matchFound) pickSelect.value = '';
+  }
+
   document.getElementById('tip-score').value   = tip.score  || '';
   document.getElementById('tip-notes').value   = tip.notes  || '';
   document.getElementById('tip-tier').value    = tip.tier   || 'free';
